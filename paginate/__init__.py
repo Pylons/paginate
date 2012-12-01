@@ -250,6 +250,8 @@ class Page(list):
         else:
             self.collection = []
 
+        self.collection_type = type(collection)
+
         # The self.page is the number of the current page.
         # The first page has the number 1!
         try:
@@ -293,7 +295,7 @@ class Page(list):
                 last = self.last_item
                 self.items = list(self.collection[first:last])
             except TypeError(e):
-                raise TypeError("Your collection of type %s cannot be handled by paginate.",
+                raise TypeError("Your collection of type %s cannot be handled by paginate." ,
                                 type(self.collection))
 
             # Links to previous and next page
@@ -336,7 +338,7 @@ class Page(list):
             "Number of items:  %(item_count)s\n"
             "Number of pages:  %(page_count)s\n"
             % {
-            'type':type(self.collection),
+            'type':self.collection_type,
             'page':self.page,
             'first_item':self.first_item,
             'last_item':self.last_item,
