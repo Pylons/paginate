@@ -127,25 +127,9 @@ by Christoph Haas and Mike Orr for WebHelpers. (c) 2007-2011. """
 
 import re
 from string import Template
-import urllib
-import cgi
-import warnings
-
-def get_wrapper(obj):
-    """
-    Auto-detect the kind of object and return a list/tuple
-    to access items from the collection.
-    """
-    # If object is iterable we can use it.  (This is not true if it's
-    # non-sliceable but there doesn't appear to be a way to test for that. We'd
-    # have to call .__getitem__ with a slice and guess what the exception
-    # means, and calling it may cause side effects.)
-    required_methods = ["__iter__", "__len__", "__getitem__"]
-    for meth in required_methods:
-        if not hasattr(obj, meth):
-            raise TypeError(INCOMPATIBLE_COLLECTION_TYPE)
-
-    return obj
+#import urllib
+#import cgi
+#import warnings
 
 
 # Since the items on a page are mainly a list we subclass the "list" type
@@ -199,7 +183,7 @@ class Page(list):
         Index of last item on the current page
         
     """
-    def __init__(self, collection, page=1, items_per_page=20, item_count=None, url=None, **kwargs):
+    def __init__(self, collection, page=1, items_per_page=20, item_count=None, **kwargs):
         """Create a "Page" instance.
 
         Parameters:
@@ -219,10 +203,6 @@ class Page(list):
             If this parameter is not given then the paginator will count
             the number of elements in the collection every time a "Page"
             is created. Giving this parameter will speed up things.
-        
-        url (optional)
-            The URL of the page currently shown to the user.
-            This is used only by ``.pager()``.
 
         Further keyword arguments are used as link arguments in the pager().
         """
@@ -294,8 +274,8 @@ class Page(list):
                 first = self.first_item - 1
                 last = self.last_item
                 self.items = list(self.collection[first:last])
-            except TypeError(e):
-                raise TypeError("Your collection of type %s cannot be handled by paginate." ,
+            except TypeError:
+                raise TypeError("Your collection of type %s cannot be handled by paginate." %
                                 type(self.collection))
 
             # Links to previous and next page
@@ -352,7 +332,7 @@ class Page(list):
             })
 
     def pager(self, format='~2~', page_param='page', partial_param='partial',
-        show_if_single_page=False, separator=' ', onclick=None,
+        url=None, show_if_single_page=False, separator=' ', onclick=None,
         symbol_first='<<', symbol_last='>>',
         symbol_previous='<', symbol_next='>',
         link_attr={'class':'pager_link'}, curpage_attr={'class':'pager_curpage'},
@@ -385,6 +365,10 @@ class Page(list):
             '1 .. 5 6 7 [8] 9 10 11 .. 500'
 
             Default: '~2~'
+
+        url
+            The URL that page links will point to. Make sure it contains the string
+            $page which will be replaced by the actual page number.
 
         symbol_first
             String to be displayed as the text for the %(link_first)s 
@@ -527,8 +511,6 @@ class Page(list):
                 "my_load_page($page)"
 
         Additional keyword arguments are used as arguments in the links.
-        Otherwise the link will be created with url_for() which points 
-        to the page you are currently displaying.
         """
         self.curpage_attr = curpage_attr
         self.separator = separator
@@ -538,6 +520,10 @@ class Page(list):
         self.onclick = onclick
         self.link_attr = link_attr
         self.dotdot_attr = dotdot_attr
+        self.url = url
+        
+        if "$page" not in url:
+            raise Exception("The 'url' string must contain a '$page' placeholder.")
 
         # Don't show navigator if there is no more than one page
         if self.page_count == 0 or (self.page_count == 1 and not show_if_single_page):
@@ -603,20 +589,18 @@ class Page(list):
         # and the currently displayed page range
         if leftmost_page - self.first_page > 1:
             # Wrap in a SPAN tag if nolink_attr is set
+            text = '..'
             if self.dotdot_attr:
                 text = make_html_tag('span', **self.dotdot_attr) + text + '</span>'
-            else:
-                text = '..'
             nav_items.append(text)
 
         for thispage in range(leftmost_page, rightmost_page+1):
             # Highlight the current page number and do not use a link
             if thispage == self.page:
                 # Wrap in a SPAN tag if nolink_attr is set
+                text = '%s' % (thispage,)
                 if self.curpage_attr:
                     text = make_html_tag('span', **self.curpage_attr) + text + '</span>'
-                else:
-                    text = '%s' % (thispage,)
                 nav_items.append(text)
             # Otherwise create just a link to that page
             else:
@@ -627,10 +611,9 @@ class Page(list):
         # page numbers and the end of the page range
         if self.last_page - rightmost_page > 1:
             # Wrap in a SPAN tag if nolink_attr is set
+            text = '..'
             if self.dotdot_attr:
                 text = make_html_tag('span', **self.dotdot_attr) + text + '</span>'
-            else:
-                text = '..'
             nav_items.append(text)
 
         # Create a link to the very last page (unless we are on the last
@@ -640,7 +623,7 @@ class Page(list):
 
         return self.separator.join(nav_items)
 
-    def _pagerlink(self, page, text):
+    def _pagerlink(self, page_number, text):
         """
         Create a URL that links to another page using url_for().
 
@@ -664,160 +647,171 @@ class Page(list):
         link_params.update(self.kwargs)
         # Add keyword arguments from pager() to the link as parameters
         link_params.update(self.pager_kwargs)
-        link_params[self.page_param] = page
+        link_params[self.page_param] = page_number
 
         # Create the URL to load a certain page
-        link_url = url_generator(self.url, **link_params)
+        #link_url = url_generator(self.url, **link_params)
+        #link_url = self._make_link(self.url, page_number, **link_params)
 
-        if self.onclick: # create link with onclick action for AJAX
-            # Create the URL to load the page area part of a certain page (AJAX
-            # updates)
-            link_params[self.partial_param] = 1
-            partial_url = url_generator(self.url, **link_params)
-            try: # if '%s' is used in the 'onclick' parameter (backwards compatibility)
-                onclick_action = self.onclick % (partial_url,)
-            except TypeError:
-                onclick_action = Template(self.onclick).safe_substitute({
-                  "partial_url": partial_url,
-                  "page": page
-                })
-            return HTML.a(text, href=link_url, onclick=onclick_action, **self.link_attr)
-        else: # return static link
-            return HTML.a(text, href=link_url, **self.link_attr)
+        #if self.onclick: # create link with onclick action for AJAX
+        #    # Create the URL to load the page area part of a certain page (AJAX
+        #    # updates)
+        #    link_params[self.partial_param] = 1
+        #    partial_url = url_generator(self.url, **link_params)
+        #    try: # if '%s' is used in the 'onclick' parameter (backwards compatibility)
+        #        onclick_action = self.onclick % (partial_url,)
+        #    except TypeError:
+        #        onclick_action = Template(self.onclick).safe_substitute({
+        #          "partial_url": partial_url,
+        #          "page": page_umber
+        #        })
+        ## XXX: HTML? DAFUQ?
+        #    return HTML.a(text, href=link_url, onclick=onclick_action, **self.link_attr)
+        #else: # return static link
+        #    return HTML.a(text, href=link_url, **self.link_attr)
+        return self._make_link(self.url, page_number, text, **self.link_attr)
 
+    def _make_link(self, url_format, page_number, text, **kwargs):
+        """Create an A tag that links to another page.
+        
+        url_format: URL that contains a "$page" string where paginate is supposed to insert
+            the page number.
+        
+        page_number: The page number 
+        """
+        tag = make_html_tag('a', text=text, href=url_format.replace('$page', str(page_number)),
+            **kwargs)
+        return tag
 
 #### URL GENERATOR CLASSES
-def make_page_url(path, params, page, partial=False, sort=True):
-    """A helper function for URL generators.
-
-    I assemble a URL from its parts. I assume that a link to a certain page is
-    done by overriding the 'page' query parameter.
-
-    ``path`` is the current URL path, with or without a "scheme://host" prefix.
-
-    ``params`` is the current query parameters as a dict or dict-like object.
-
-    ``page`` is the target page number.
-
-    If ``partial`` is true, set query param 'partial=1'. This is to for AJAX
-    calls requesting a partial page.
-
-    If ``sort`` is true (default), the parameters will be sorted. Otherwise
-    they'll be in whatever order the dict iterates them.
-    """
-    params = params.copy()
-    params["page"] = page
-    if partial:
-        params["partial"] = "1"
-    if sort:
-        params = params.items()
-        params.sort()
-    qs = urllib.urlencode(params, True)
-    return "%s?%s" % (path, qs)
+#def make_page_url(path, params, page, partial=False, sort=True):
+#    """A helper function for URL generators.
+#
+#    I assemble a URL from its parts. I assume that a link to a certain page is
+#    done by overriding the 'page' query parameter.
+#
+#    ``path`` is the current URL path, with or without a "scheme://host" prefix.
+#
+#    ``params`` is the current query parameters as a dict or dict-like object.
+#
+#    ``page`` is the target page number.
+#
+#    If ``partial`` is true, set query param 'partial=1'. This is to for AJAX
+#    calls requesting a partial page.
+#
+#    If ``sort`` is true (default), the parameters will be sorted. Otherwise
+#    they'll be in whatever order the dict iterates them.
+#    """
+#    params = params.copy()
+#    params["page"] = page
+#    if partial:
+#        params["partial"] = "1"
+#    if sort:
+#        params = params.items()
+#        params.sort()
+#    qs = urllib.urlencode(params, True)
+#    return "%s?%s" % (path, qs)
     
-class PageURL(object):
-    """A simple page URL generator for any framework."""
+#class PageURL(object):
+#    """A simple page URL generator for any framework."""
+#
+#    def __init__(self, path, params):
+#        """
+#        ``path`` is the current URL path, with or without a "scheme://host"
+#         prefix.
+#
+#        ``params`` is the current URL's query parameters as a dict or dict-like
+#        object.
+#        """
+#        self.path = path
+#        self.params = params
+#
+#    def __call__(self, page, partial=False):
+#        """Generate a URL for the specified page."""
+#        return make_page_url(self.path, self.params, page, partial)
 
-    def __init__(self, path, params):
-        """
-        ``path`` is the current URL path, with or without a "scheme://host"
-         prefix.
 
-        ``params`` is the current URL's query parameters as a dict or dict-like
-        object.
-        """
-        self.path = path
-        self.params = params
+#class PageURL_WebOb(object):
+#    """A page URL generator for WebOb-compatible Request objects.
+#    
+#    I derive new URLs based on the current URL but overriding the 'page'
+#    query parameter.
+#
+#    I'm suitable for Pyramid, Pylons, and TurboGears, as well as any other
+#    framework whose Request object has 'application_url', 'path', and 'GET'
+#    attributes that behave the same way as ``webob.Request``'s.
+#    """
+#    
+#    def __init__(self, request, qualified=False):
+#        """
+#        ``request`` is a WebOb-compatible ``Request`` object.
+#
+#        If ``qualified`` is false (default), generated URLs will have just the
+#        path and query string. If true, the "scheme://host" prefix will be
+#        included. The default is false to match traditional usage, and to avoid
+#        generating unuseable URLs behind reverse proxies (e.g., Apache's
+#        mod_proxy). 
+#        """
+#        self.request = request
+#        self.qualified = qualified
+#
+#    def __call__(self, page, partial=False):
+#        """Generate a URL for the specified page."""
+#        if self.qualified:
+#            path = self.request.application_url
+#        else:
+#            path = self.request.path
+#        return make_page_url(path, self.request.GET, page, partial)
 
-    def __call__(self, page, partial=False):
-        """Generate a URL for the specified page."""
-        return make_page_url(self.path, self.params, page, partial)
-
-
-class PageURL_WebOb(object):
-    """A page URL generator for WebOb-compatible Request objects.
+def make_html_tag(tag, text=None, **params):
+    """Create an HTML tag string.
     
-    I derive new URLs based on the current URL but overriding the 'page'
-    query parameter.
-
-    I'm suitable for Pyramid, Pylons, and TurboGears, as well as any other
-    framework whose Request object has 'application_url', 'path', and 'GET'
-    attributes that behave the same way as ``webob.Request``'s.
-    """
+    tag: The HTML tag to use (e.g. 'a', 'span' or 'div')
     
-    def __init__(self, request, qualified=False):
-        """
-        ``request`` is a WebOb-compatible ``Request`` object.
+    text: The text to enclose between opening and closing tag. If no text is specified then only
+        the opening tag is returned.
+    
+    Example::
+        make_html_tag('a', text="Hello", href="/another/page")
+        -> <a href="/another/page">Hello</a>
 
-        If ``qualified`` is false (default), generated URLs will have just the
-        path and query string. If true, the "scheme://host" prefix will be
-        included. The default is false to match traditional usage, and to avoid
-        generating unuseable URLs behind reverse proxies (e.g., Apache's
-        mod_proxy). 
-        """
-        self.request = request
-        self.qualified = qualified
-
-    def __call__(self, page, partial=False):
-        """Generate a URL for the specified page."""
-        if self.qualified:
-            path = self.request.application_url
-        else:
-            path = self.request.path
-        return make_page_url(path, self.request.GET, page, partial)
-
-def make_html_tag(tag, **params):
-    """Create an HTML tag string with properly escaped parameters."""
+    To use reserved Python keywords like "class" as a parameter prepend it with
+    an underscore. Instead of "class='green'" use "_class='green'".
+    
+    Warning: Quotes and apostrophes are not escaped."""
     params_string = ''
 
     # Parameters are passed. Turn the dict into a string like "a=1 b=2 c=3" string.
-    for param in params.items():
-        key, value = param
-
+    for key, value in params.items():
         # Strip off a leading underscore from the attribute's key to allow attributes like '_class'
         # to be used as a CSS class specification instead of the reserved Python keyword 'class'.
         key = key.lstrip('_')
 
-        # Escape the attribute's value for security reasons.
-        # Replace special characters '"', '&', '<' and '>' to HTML-safe sequences.
-        # Imitates cgi.escape from the Python standard library.
-        #value = value.replace("&", "&amp;") # Must be done first!
-        #value = value.replace("<", "&lt;")
-        #value = value.replace(">", "&gt;")
-        #value = value.replace('"', "&quot;")
-        # XXX: Values are expected to be properly escaped.
-        # XXX: Otherwise this function cannot distinguish between illegale quotes
-        # XXX: and legal ones used e.g. in alert("foo")
-
         params_string += ' %s="%s"' % (key, value)
-
-    #if params:
-    #    params_string = ' '+' '.join(['%s="%s"' % (item[0].lstrip('_'), item[1]) for item in params.items()])
-    #else:
-    #    params_string = ''
 
     # Create the tag string
     tag_string = '<%s%s>' % (tag, params_string)
+    
+    # Add text and closing tag if required.
+    if text:
+        tag_string += '%s</%s>' % (text, tag)
 
     return tag_string
 
-def url_generator(url, **params):
-    """Parse the URL and replace the query parameters with the params passed to this function."""
-    # TODO: tests missing
-
-    # Split the given URL into the path and the query parameters
-    url_path, query_params=urllib.splitquery(url)
-    # Parse the query parameters and put them into a dictionary.
-    query_dict = dict(cgi.parse_qsl(query_params))
-
-    # Update the dictionary with the new parameters that should be changed.
-    query_dict.update(params)
-
-    # Create a new query parameter string.
-    new_query_params = '&'.join(['%s=%s' % item for item in query_dict.items()])
-
-    # Put together a new URL and return it
-    return "%s?%s" % (url_path, new_query_params)
-
-# TODO: add support for CouchDB databases (http://guide.couchdb.org/editions/1/de/recipes.html)
-# TODO: find a better way to abstract the Page. e.g. subclass Page as PageSqlalchemy or PageCouchdb
+#def url_generator(url, **params):
+#    """Parse the URL and replace the query parameters with the params passed to this function."""
+#    # TODO: tests missing
+#
+#    # Split the given URL into the path and the query parameters
+#    url_path, query_params=urllib.splitquery(url)
+#    # Parse the query parameters and put them into a dictionary.
+#    query_dict = dict(cgi.parse_qsl(query_params))
+#
+#    # Update the dictionary with the new parameters that should be changed.
+#    query_dict.update(params)
+#
+#    # Create a new query parameter string.
+#    new_query_params = '&'.join(['%s=%s' % item for item in query_dict.items()])
+#
+#    # Put together a new URL and return it
+#    return "%s?%s" % (url_path, new_query_params)
