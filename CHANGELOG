@@ -23,3 +23,7 @@ Changes:
   link_attr={'class':'pager_link'}
   curpage_attr={'class':'pager_curpage'}
   dotdot_attr={'class':'pager_dotdot'}
+- The partial_param parameter from Page.pager() is gone. You should use your own URLs for
+  AJAX/partial updates in the 'url' parameter.
+- The page_param parameter from Page.pager() is also gone as URL generation has been severely
+  simplified.

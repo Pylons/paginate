@@ -29,3 +29,45 @@ Make sure that the docstring are in good shape.
 Upload to PyPi
 
 Announce to pylons-discussion mailing list.
+
+Add AJAX tutorial
+
+        onclick (optional)
+            This paramter is a string containing optional Javascript code
+            that will be used as the 'onclick' action of each pager link.
+            It can be used to enhance your pager with AJAX actions loading another 
+            page into a DOM object. 
+
+            In this string the variable '$partial_url' will be replaced by
+            the URL linking to the desired page with an added 'partial=1'
+            parameter (or whatever you set 'partial_param' to).
+            In addition the '$page' variable gets replaced by the
+            respective page number.
+
+            Note that the URL to the destination page contains a 'partial_param' 
+            parameter so that you can distinguish between AJAX requests (just 
+            refreshing the paginated area of your page) and full requests (loading 
+            the whole new page).
+
+            [Backward compatibility: you can use '%s' instead of '$partial_url']
+
+            jQuery example:
+                "$('#my-page-area').load('$partial_url'); return false;"
+
+            Yahoo UI example:
+                "YAHOO.util.Connect.asyncRequest('GET','$partial_url',{
+                    success:function(o){YAHOO.util.Dom.get('#my-page-area').innerHTML=o.responseText;}
+                    },null); return false;"
+
+            scriptaculous example:
+                "new Ajax.Updater('#my-page-area', '$partial_url',
+                    {asynchronous:true, evalScripts:true}); return false;"
+
+            ExtJS example:
+                "Ext.get('#my-page-area').load({url:'$partial_url'}); return false;"
+            
+            Custom example:
+                "my_load_page($page)"
+
+    p.pager(url="/index.php?page=$page", link_attr=dict(onclick="$('target').load('/ding/dong?page=$page'"))
+
