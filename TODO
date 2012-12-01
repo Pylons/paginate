@@ -1,0 +1,23 @@
+Remove any relation to webhelpers or historical Pylons functionality.
+Paginate must work standalone.
+
+Add license headers everywhere (MIT).
+
+Provide simple URL generator. Let the user declare their own URL generation function instead.
+Like a callback function with the page number as a parameter.
+
+Move the **kwargs of pager into a dictionary parameter pager_linkattr (more explicit)
+
+Move SQLAlchemy code as an extension into paginate.sqlalchemy
+
+Create test with setup/teardown code for paginate.sqlalchemy.SqlalchemyPage (e.g. sqlite)
+
+Perhaps move paginate.ext_sqlalchemy into external modules like paginate_sqlalchemy
+
+Make sure that the CHANGELOG reflects all relevant API changes.
+
+Make sure that the docstring are in good shape.
+
+Upload to PyPi
+
+Announce to pylons-discussion mailing list.
