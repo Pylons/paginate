@@ -16,3 +16,10 @@ Changes:
 - presliced_list parameter no longer supported
 - 'page_nr' and 'current_page' had been deprecated already and are now removed. Please use 'page'
   instead.
+- No automatic URL generation. You need to pass a 'url' argument to the Page.pager() method
+  containing a $page placeholder where you want the page number to be put in
+- The Page.pager() does not automatically add CSS classes any more. If you want the old
+  behavior you need to pass these parameters explicitly:
+  link_attr={'class':'pager_link'}
+  curpage_attr={'class':'pager_curpage'}
+  dotdot_attr={'class':'pager_dotdot'}
