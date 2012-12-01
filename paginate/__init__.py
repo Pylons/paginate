@@ -31,12 +31,12 @@ Now we can create a collection and instantiate the Page::
     >>> my_collection = range(1000)
 
     # Create a Page object for the 3rd page (20 items per page is the default)
-    >>> my_page = Page(my_collection, page=3, url=url_for_page)
+    >>> my_page = Page(my_collection, page=3)
 
     # The page object can be printed directly to get its details
     >>> my_page
     Page:
-    Collection type:  <type 'list'>
+    Collection type:  <type 'range'>
     Current page:     3
     First item:       41
     Last item:        60
@@ -47,72 +47,53 @@ Now we can create a collection and instantiate the Page::
     Items per page:   20
     Number of items:  1000
     Number of pages:  50
-    <BLANKLINE>
 
     # Print a list of items on the current page
     >>> my_page.items
     [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59]
 
     # The *Page* object can be used as an iterator:
-    >>> for my_item in my_page: print my_item,
+    >>> for my_item in my_page: print(my_item)
     40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59
 
     # The .pager() method returns an HTML fragment with links to surrounding
     # pages.
     # [The ">>" prompt is to hide untestable examples from doctest.]
-    >> my_page.pager()
-    1 2 [3] 4 5 .. 50       (this is actually HTML)
+    >> my_page.pager(url="http://example.org/foo/page=$page")
+
+    <a href="http://example.org/foo/page=1">1</a>
+    <a href="http://example.org/foo/page=2">2</a>
+    3
+    <a href="http://example.org/foo/page=4">4</a>
+    <a href="http://example.org/foo/page=5">5</a>
+    ..
+    <a href="http://example.org/foo/page=50">50</a>'
+
+    # Without the HTML it would just look like:
+    # 1 2 [3] 4 5 .. 50
 
     # The pager can be customized:
-    >> my_page.pager('$link_previous ~3~ $link_next (Page $page of $page_count)')
-    1 2 [3] 4 5 6 .. 50 > (Page 3 of 50)
+    >> my_page.pager('$link_previous ~3~ $link_next (Page $page of $page_count)',
+                     url="http://example.org/foo/page=$page")
 
-There are many parameters that customize the Page's behavor. See the
-documentation on ``Page`` and ``Page.pager()``.
+    <a href="http://example.org/foo/page=2">&lt;</a>
+    <a href="http://example.org/foo/page=1">1</a>
+    <a href="http://example.org/foo/page=2">2</a>
+    3
+    <a href="http://example.org/foo/page=4">4</a>
+    <a href="http://example.org/foo/page=5">5</a>
+    <a href="http://example.org/foo/page=6">6</a>
+    ..
+    <a href="http://example.org/foo/page=50">50</a>
+    <a href="http://example.org/foo/page=4">&gt;</a>
+    (Page 3 of 50)
 
-URL generator
--------------
+    # Without the HTML it would just look like:
+    # 1 2 [3] 4 5 6 .. 50 > (Page 3 of 50)
 
-The constructor's ``url`` argument is a callback that returns URLs to other pages. It's required
-when using the ``Page.pager()`` method except under Pylons, where it will fall back to
-``pylons.url.current`` (Pylons 1) and then ``routes.url_for`` (Pylons 0.9.7). If none of these are
-available, you'll get an exception "NotImplementedError: no URL generator available".
+There are some interesting parameters that customize the Page's behavior. See the documentation on
+``Page`` and ``Page.pager()``.
 
-WebHelpers 1.3 introduces a few URL generators for convenience. **PageURL** is described above.
-**PageURL_WebOb** takes a ``webobb.Request`` object, and is suitable for Pyramid, Pylons,
-TurboGears, and other frameworks that have a WebOb-compatible Request object. Both of these classes
-assume that the page number is in the 'page' query parameter.
-
-This overrides the 'page' path variable, while leaving the 'id' variable and the query string
-intact.
-
-The callback API is simple. 
-
-1. It must accept an integer argument 'page', which will be passed by name.
-
-2. It should return the URL for that page.  
-
-3. If you're using AJAX 'partial' functionality described in the ``Page.pager``
-   docstring, the callback should also accept a 'partial' argument and, if true, set a query
-   parameter 'partial=1'.
-
-4. If you use the 'page_param' or 'partial_param' argument to ``Page.pager``,
-   the 'page' and 'partial' arguments will be renamed to whatever you specify. In this case, the
-   callback would also have to expect these other argument names.
-
-The supplied classes adhere to this API in their ``.__call__`` method, all except the fourth
-condition. So you can use their instances as callbacks as long as you don't use 'page_param' or
-'partial_param'.
-
-For convenience in writing callbacks that update the 'page' query parameter, a ``make_page_url``
-function is available that assembles the pieces into a complete URL. Other callbacks may find
-``webhelpers.utl.update_params`` useful, which overrides query parameters on a more general basis.
-
-
-Can I use AJAX / AJAH?
-------------------------
-
-Yes. See *partial_param* and *onclick* in ``Page.pager()``.
 
 Notes
 -------
@@ -120,16 +101,11 @@ Notes
 Page numbers and item numbers start at 1. This concept has been used because users expect that the
 first page has number 1 and the first item on a page also has number 1. So if you want to use the
 page's items by their index number please note that you have to subtract 1.
+"""
 
-This module is based on the code from http://workaround.org/cgi-bin/hg-paginate that is known at the
-"Paginate" module on PyPI. It was written by Christoph Haas <email@christoph-haas.de>, and modified
-by Christoph Haas and Mike Orr for WebHelpers. (c) 2007-2011. """
 
 import re
 from string import Template
-#import urllib
-#import cgi
-#import warnings
 
 
 # Since the items on a page are mainly a list we subclass the "list" type
@@ -318,10 +294,9 @@ class Page(list):
             'page_count':self.page_count,
             })
 
-    def pager(self, format='~2~', page_param='page',
-        url=None, show_if_single_page=False, separator=' ',
-        symbol_first='<<', symbol_last='>>', symbol_previous='<', symbol_next='>',
-        link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict(), **kwargs):
+    def pager(self, format='~2~', url=None, show_if_single_page=False, separator=' ',
+        symbol_first='&lt;&lt;', symbol_last='&gt;&gt;', symbol_previous='&lt;', symbol_next='&gt;',
+        link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict()):
         """
         Return string with links to other pages (e.g. '1 .. 5 6 7 [8] 9 10 11 .. 50').
 
@@ -385,24 +360,6 @@ class Page(list):
 
             Default: ' '
 
-        page_param:
-            The name of the parameter that will carry the number of the 
-            page the user just clicked on. The parameter will be passed 
-            to a url_for() call so if you stay with the default 
-            ':controller/:action/:id' routing and set page_param='id' then 
-            the :id part of the URL will be changed. If you set 
-            page_param='page' then url_for() will make it an extra 
-            parameters like ':controller/:action/:id?page=1'. 
-            You need the page_param in your action to determine the page 
-            number the user wants to see. If you do not specify anything 
-            else the default will be a parameter called 'page'.
-
-            Note: If you set this argument and are using a URL generator
-            callback, the callback must accept this name as an argument instead
-            of 'page'.
-            callback, becaust the callback requires its argument to be 'page'.
-            Instead the callback itself can return any URL necessary.
-
         show_if_single_page:
             if True the navigator will be shown even if there is only 
             one page.
@@ -435,56 +392,20 @@ class Page(list):
             Example: { 'style':'color: #808080' }
             Example: { 'class':'pager_dotdot' }
 
-        onclick (optional)
-            This paramter is a string containing optional Javascript code
-            that will be used as the 'onclick' action of each pager link.
-            It can be used to enhance your pager with AJAX actions loading another 
-            page into a DOM object. 
-
-            In this string the variable '$partial_url' will be replaced by
-            the URL linking to the desired page with an added 'partial=1'
-            parameter (or whatever you set 'partial_param' to).
-            In addition the '$page' variable gets replaced by the
-            respective page number.
-
-            Note that the URL to the destination page contains a 'partial_param' 
-            parameter so that you can distinguish between AJAX requests (just 
-            refreshing the paginated area of your page) and full requests (loading 
-            the whole new page).
-
-            [Backward compatibility: you can use '%s' instead of '$partial_url']
-
-            jQuery example:
-                "$('#my-page-area').load('$partial_url'); return false;"
-
-            Yahoo UI example:
-                "YAHOO.util.Connect.asyncRequest('GET','$partial_url',{
-                    success:function(o){YAHOO.util.Dom.get('#my-page-area').innerHTML=o.responseText;}
-                    },null); return false;"
-
-            scriptaculous example:
-                "new Ajax.Updater('#my-page-area', '$partial_url',
-                    {asynchronous:true, evalScripts:true}); return false;"
-
-            ExtJS example:
-                "Ext.get('#my-page-area').load({url:'$partial_url'}); return false;"
-            
-            Custom example:
-                "my_load_page($page)"
-
         Additional keyword arguments are used as arguments in the links.
         """
         self.curpage_attr = curpage_attr
         self.separator = separator
-        self.pager_kwargs = kwargs
-        self.page_param = page_param
-        self.partial_param = partial_param
         self.link_attr = link_attr
         self.dotdot_attr = dotdot_attr
         self.url = url
         
+        if url is None:
+            raise Exception(
+                "You need to specify a 'url' parameter containing a '$page' placeholder.")
+        
         if "$page" not in url:
-            raise Exception("The 'url' string must contain a '$page' placeholder.")
+            raise Exception("The 'url' parameter must contain a '$page' placeholder.")
 
         # Don't show navigator if there is no more than one page
         if self.page_count == 0 or (self.page_count == 1 and not show_if_single_page):
