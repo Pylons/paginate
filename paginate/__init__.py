@@ -333,10 +333,8 @@ class Page(list):
 
     def pager(self, format='~2~', page_param='page', partial_param='partial',
         url=None, show_if_single_page=False, separator=' ', onclick=None,
-        symbol_first='<<', symbol_last='>>',
-        symbol_previous='<', symbol_next='>',
-        link_attr={'class':'pager_link'}, curpage_attr={'class':'pager_curpage'},
-        dotdot_attr={'class':'pager_dotdot'}, **kwargs):
+        symbol_first='<<', symbol_last='>>', symbol_previous='<', symbol_next='>',
+        link_attr=None, curpage_attr=None, dotdot_attr=None, **kwargs):
         """
         Return string with links to other pages (e.g. "1 2 [3] 4 5 6 7").
 
@@ -554,7 +552,6 @@ class Page(list):
 
         return result
 
-    #### Private methods ####
     def _range(self, regexp_match):
         """
         Return range of linked pages (e.g. '1 2 [3] 4 5 6 7 8').
@@ -625,7 +622,7 @@ class Page(list):
 
     def _pagerlink(self, page_number, text):
         """
-        Create a URL that links to another page using url_for().
+        Create an A-HREF tag that points to another page.
 
         Parameters:
             
@@ -669,19 +666,23 @@ class Page(list):
         #    return HTML.a(text, href=link_url, onclick=onclick_action, **self.link_attr)
         #else: # return static link
         #    return HTML.a(text, href=link_url, **self.link_attr)
-        return self._make_link(self.url, page_number, text, **self.link_attr)
+        
+        target_url = self.url.replace('$page', str(page_number))
+        a_tag = make_html_tag('a', text=text, href=target_url, **self.link_attr)
+        return a_tag
+        #return self._make_link(self.url, page_number, text, **self.link_attr)
 
-    def _make_link(self, url_format, page_number, text, **kwargs):
-        """Create an A tag that links to another page.
-        
-        url_format: URL that contains a "$page" string where paginate is supposed to insert
-            the page number.
-        
-        page_number: The page number 
-        """
-        tag = make_html_tag('a', text=text, href=url_format.replace('$page', str(page_number)),
-            **kwargs)
-        return tag
+    #def _make_link(self, url_format, page_number, text, **kwargs):
+    #    """Create an A tag that links to another page.
+    #    
+    #    url_format: URL that contains a "$page" string where paginate is supposed to insert
+    #        the page number.
+    #    
+    #    page_number: The page number 
+    #    """
+    #    tag = make_html_tag('a', text=text, href=url_format.replace('$page', str(page_number)),
+    #        **kwargs)
+    #    return tag
 
 #### URL GENERATOR CLASSES
 #def make_page_url(path, params, page, partial=False, sort=True):
@@ -766,9 +767,11 @@ class Page(list):
 def make_html_tag(tag, text=None, **params):
     """Create an HTML tag string.
     
-    tag: The HTML tag to use (e.g. 'a', 'span' or 'div')
+    tag
+        The HTML tag to use (e.g. 'a', 'span' or 'div')
     
-    text: The text to enclose between opening and closing tag. If no text is specified then only
+    text
+        The text to enclose between opening and closing tag. If no text is specified then only
         the opening tag is returned.
     
     Example::
