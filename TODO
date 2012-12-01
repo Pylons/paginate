@@ -16,6 +16,14 @@ Perhaps move paginate.ext_sqlalchemy into external modules like paginate_sqlalch
 
 Make sure that the CHANGELOG reflects all relevant API changes.
 
+Improve handling of AJAX links. No magical "partial" argument.
+
+Ensure that escaping of ' and " is not causing headaches in make_html_tag.
+In [8]: make_html_tag('a', foo=3, bar=123, onclick="$('#bla').doStuff()")
+Out[8]: '<a foo="3" bar="123" onclick="$(\'#bla\').doStuff()">'
+
+add support for CouchDB databases (http://guide.couchdb.org/editions/1/de/recipes.html)
+
 Make sure that the docstring are in good shape.
 
 Upload to PyPi
