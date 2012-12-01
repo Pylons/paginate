@@ -1,0 +1,18 @@
+Version 0.3.2 - 2008-01-31
+--------------------------
+Public release on PyPi
+
+Version 0.4.0 - 2012-12-XXX
+--------------------------
+Paginate has prior been maintained as webhelpers.paginate in the _webhelpers_ packages.
+This version is a standalone version that should be useful outside of the webhelpers'
+context.
+
+Changes:
+- Python 3 compatibility.
+- SQLAlchemyObject and SQLAlchemyQuery collections are not automatically detected any more.
+  Instead you can use the respective Page class from the paginate_sqlalchemy module also
+  available on PyPi.
+- presliced_list parameter no longer supported
+- 'page_nr' and 'current_page' had been deprecated already and are now removed. Please use 'page'
+  instead.
