@@ -183,7 +183,7 @@ class Page(list):
         Index of last item on the current page
         
     """
-    def __init__(self, collection, page=1, items_per_page=20, item_count=None, **kwargs):
+    def __init__(self, collection, page=1, items_per_page=20, item_count=None):
         """Create a "Page" instance.
 
         Parameters:
@@ -206,19 +206,6 @@ class Page(list):
 
         Further keyword arguments are used as link arguments in the pager().
         """
-        # URL generation is now done within this module. So tell the developer
-        # that passing a URL generation function is deprecated. Instead a string
-        # URL is expected.
-        #if hasattr(url, '__call__'):
-        #    warnings.warn("""Passing URL generators as the 'url' parameter is no longer
-        #            supported. Please pass the current URL as a string instead.""")
-        #    self.url = url()
-        #else:
-        #    self.url = url
-
-        # Safe the kwargs class-wide so they can be used in the pager() method
-        self.kwargs = kwargs
-
         # Save a reference to the collection
         self.original_collection = collection
 
@@ -331,8 +318,8 @@ class Page(list):
             'page_count':self.page_count,
             })
 
-    def pager(self, format='~2~', page_param='page', partial_param='partial',
-        url=None, show_if_single_page=False, separator=' ', onclick=None,
+    def pager(self, format='~2~', page_param='page',
+        url=None, show_if_single_page=False, separator=' ',
         symbol_first='<<', symbol_last='>>', symbol_previous='<', symbol_next='>',
         link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict(), **kwargs):
         """
@@ -416,26 +403,6 @@ class Page(list):
             callback, becaust the callback requires its argument to be 'page'.
             Instead the callback itself can return any URL necessary.
 
-        partial_param:
-            When using AJAX/AJAH to do partial updates of the page area the
-            application has to know whether a partial update (only the
-            area to be replaced) or a full update (reloading the whole
-            page) is required. So this parameter is the name of the URL
-            parameter that gets set to 1 if the 'onclick' parameter is
-            used. So if the user requests a new page through a Javascript
-            action (onclick) then this parameter gets set and the application
-            is supposed to return a partial content. And without
-            Javascript this parameter is not set. The application thus has
-            to check for the existence of this parameter to determine
-            whether only a partial or a full page needs to be returned.
-            See also the examples in this modules docstring.
-
-            Default: 'partial'
-
-            Note: If you set this argument and are using a URL generator
-            callback, the callback must accept this name as an argument instead
-            of 'partial'.
-
         show_if_single_page:
             if True the navigator will be shown even if there is only 
             one page.
@@ -448,8 +415,7 @@ class Page(list):
             or class to customize the look of links.
 
             Example: { 'style':'border: 1px solid green' }
-
-            Default: { 'class':'pager_link' }
+            Example: { 'class':'pager_link' }
 
         curpage_attr (optional)
             A dictionary of attributes that get added to the current 
@@ -458,8 +424,7 @@ class Page(list):
             will be wrapped in a SPAN tag with the given attributes.
 
             Example: { 'style':'border: 3px solid blue' }
-
-            Default: { 'class':'pager_curpage' }
+            Example: { 'class':'pager_curpage' }
 
         dotdot_attr (optional)
             A dictionary of attributes that get added to the '..' string
@@ -468,8 +433,7 @@ class Page(list):
             a SPAN tag with the given attributes.
 
             Example: { 'style':'color: #808080' }
-
-            Default: { 'class':'pager_dotdot' }
+            Example: { 'class':'pager_dotdot' }
 
         onclick (optional)
             This paramter is a string containing optional Javascript code
@@ -515,7 +479,6 @@ class Page(list):
         self.pager_kwargs = kwargs
         self.page_param = page_param
         self.partial_param = partial_param
-        self.onclick = onclick
         self.link_attr = link_attr
         self.dotdot_attr = dotdot_attr
         self.url = url
@@ -632,137 +595,10 @@ class Page(list):
         text
             Text to be printed in the A-HREF tag
         """
-        # Let the url_for() from webhelpers create a new link and set
-        # the variable called 'page_param'. Example:
-        # You are in '/foo/bar' (controller='foo', action='bar')
-        # and you want to add a parameter 'page'. Then you
-        # call the navigator method with page_param='page' and
-        # the url_for() call will create a link '/foo/bar?page=...'
-        # with the respective page number added.
-        link_params = {}
-        # Use the instance kwargs from Page.__init__ as URL parameters
-        link_params.update(self.kwargs)
-        # Add keyword arguments from pager() to the link as parameters
-        link_params.update(self.pager_kwargs)
-        link_params[self.page_param] = page_number
-
-        # Create the URL to load a certain page
-        #link_url = url_generator(self.url, **link_params)
-        #link_url = self._make_link(self.url, page_number, **link_params)
-
-        #if self.onclick: # create link with onclick action for AJAX
-        #    # Create the URL to load the page area part of a certain page (AJAX
-        #    # updates)
-        #    link_params[self.partial_param] = 1
-        #    partial_url = url_generator(self.url, **link_params)
-        #    try: # if '%s' is used in the 'onclick' parameter (backwards compatibility)
-        #        onclick_action = self.onclick % (partial_url,)
-        #    except TypeError:
-        #        onclick_action = Template(self.onclick).safe_substitute({
-        #          "partial_url": partial_url,
-        #          "page": page_umber
-        #        })
-        ## XXX: HTML? DAFUQ?
-        #    return HTML.a(text, href=link_url, onclick=onclick_action, **self.link_attr)
-        #else: # return static link
-        #    return HTML.a(text, href=link_url, **self.link_attr)
-        
         target_url = self.url.replace('$page', str(page_number))
         a_tag = make_html_tag('a', text=text, href=target_url, **self.link_attr)
         return a_tag
-        #return self._make_link(self.url, page_number, text, **self.link_attr)
 
-    #def _make_link(self, url_format, page_number, text, **kwargs):
-    #    """Create an A tag that links to another page.
-    #    
-    #    url_format: URL that contains a "$page" string where paginate is supposed to insert
-    #        the page number.
-    #    
-    #    page_number: The page number 
-    #    """
-    #    tag = make_html_tag('a', text=text, href=url_format.replace('$page', str(page_number)),
-    #        **kwargs)
-    #    return tag
-
-#### URL GENERATOR CLASSES
-#def make_page_url(path, params, page, partial=False, sort=True):
-#    """A helper function for URL generators.
-#
-#    I assemble a URL from its parts. I assume that a link to a certain page is
-#    done by overriding the 'page' query parameter.
-#
-#    ``path`` is the current URL path, with or without a "scheme://host" prefix.
-#
-#    ``params`` is the current query parameters as a dict or dict-like object.
-#
-#    ``page`` is the target page number.
-#
-#    If ``partial`` is true, set query param 'partial=1'. This is to for AJAX
-#    calls requesting a partial page.
-#
-#    If ``sort`` is true (default), the parameters will be sorted. Otherwise
-#    they'll be in whatever order the dict iterates them.
-#    """
-#    params = params.copy()
-#    params["page"] = page
-#    if partial:
-#        params["partial"] = "1"
-#    if sort:
-#        params = params.items()
-#        params.sort()
-#    qs = urllib.urlencode(params, True)
-#    return "%s?%s" % (path, qs)
-    
-#class PageURL(object):
-#    """A simple page URL generator for any framework."""
-#
-#    def __init__(self, path, params):
-#        """
-#        ``path`` is the current URL path, with or without a "scheme://host"
-#         prefix.
-#
-#        ``params`` is the current URL's query parameters as a dict or dict-like
-#        object.
-#        """
-#        self.path = path
-#        self.params = params
-#
-#    def __call__(self, page, partial=False):
-#        """Generate a URL for the specified page."""
-#        return make_page_url(self.path, self.params, page, partial)
-
-
-#class PageURL_WebOb(object):
-#    """A page URL generator for WebOb-compatible Request objects.
-#    
-#    I derive new URLs based on the current URL but overriding the 'page'
-#    query parameter.
-#
-#    I'm suitable for Pyramid, Pylons, and TurboGears, as well as any other
-#    framework whose Request object has 'application_url', 'path', and 'GET'
-#    attributes that behave the same way as ``webob.Request``'s.
-#    """
-#    
-#    def __init__(self, request, qualified=False):
-#        """
-#        ``request`` is a WebOb-compatible ``Request`` object.
-#
-#        If ``qualified`` is false (default), generated URLs will have just the
-#        path and query string. If true, the "scheme://host" prefix will be
-#        included. The default is false to match traditional usage, and to avoid
-#        generating unuseable URLs behind reverse proxies (e.g., Apache's
-#        mod_proxy). 
-#        """
-#        self.request = request
-#        self.qualified = qualified
-#
-#    def __call__(self, page, partial=False):
-#        """Generate a URL for the specified page."""
-#        if self.qualified:
-#            path = self.request.application_url
-#        else:
-#            path = self.request.path
-#        return make_page_url(path, self.request.GET, page, partial)
 
 def make_html_tag(tag, text=None, **params):
     """Create an HTML tag string.
@@ -800,21 +636,3 @@ def make_html_tag(tag, text=None, **params):
         tag_string += '%s</%s>' % (text, tag)
 
     return tag_string
-
-#def url_generator(url, **params):
-#    """Parse the URL and replace the query parameters with the params passed to this function."""
-#    # TODO: tests missing
-#
-#    # Split the given URL into the path and the query parameters
-#    url_path, query_params=urllib.splitquery(url)
-#    # Parse the query parameters and put them into a dictionary.
-#    query_dict = dict(cgi.parse_qsl(query_params))
-#
-#    # Update the dictionary with the new parameters that should be changed.
-#    query_dict.update(params)
-#
-#    # Create a new query parameter string.
-#    new_query_params = '&'.join(['%s=%s' % item for item in query_dict.items()])
-#
-#    # Put together a new URL and return it
-#    return "%s?%s" % (url_path, new_query_params)
