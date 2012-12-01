@@ -334,9 +334,9 @@ class Page(list):
     def pager(self, format='~2~', page_param='page', partial_param='partial',
         url=None, show_if_single_page=False, separator=' ', onclick=None,
         symbol_first='<<', symbol_last='>>', symbol_previous='<', symbol_next='>',
-        link_attr=None, curpage_attr=None, dotdot_attr=None, **kwargs):
+        link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict(), **kwargs):
         """
-        Return string with links to other pages (e.g. "1 2 [3] 4 5 6 7").
+        Return string with links to other pages (e.g. '1 .. 5 6 7 [8] 9 10 11 .. 50').
 
         format:
             Format string that defines how the pager is rendered. The string
@@ -360,7 +360,7 @@ class Page(list):
             number sets the radius of pages around the current page.
             Example for a range with radius 3:
 
-            '1 .. 5 6 7 [8] 9 10 11 .. 500'
+            '1 .. 5 6 7 [8] 9 10 11 .. 50'
 
             Default: '~2~'
 
