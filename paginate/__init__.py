@@ -1,40 +1,29 @@
 """
-paginate: a module to help split up lists or results from ORM queries
-=======================================================================
+paginate: helps split up large collections into individual pages
+================================================================
 
 What is pagination?
 ---------------------
 
-This module helps dividing large lists of items into pages. The user 
-is shown one page at a time and can navigate to other pages. Imagine you 
-are offering a company phonebook and let the user search the entries. If 
-the search result contains 23 entries but you may want to display no 
-more than 10 entries at once. The first page contains entries 1-10, the 
-second 11-20 and the third 21-23. See the documentation of the "Page" 
-class for more information. 
+This module helps split large lists of items into pages. The user is shown one page at a time and
+can navigate to other pages. Imagine you are offering a company phonebook and let the user search
+the entries. The search result may contains 23 entries but you want to display no more than 10
+entries at once. The first page contains entries 1-10, the second 11-20 and the third 21-23. See the
+documentation of the "Page" class for more information.
 
 How do I use it?
 ------------------
 
-One page of items is represented by the *Page* object. A *Page* gets
-initialized with at least two arguments and usually three:
+A page of items is represented by the *Page* object. A *Page* gets initialized with these arguments:
 
-- The collection of items to pick a range from.
-- The page number we want to display. (Default is 1: the first page.)
-- A URL generator callback. (This tells what the URLs to other pages are.
-  It's required if using the ``pager()`` method, although it may be omitted
-  under Pylons for backward compatibility. It is required for Pyramid.)
-
-Here's an interactive example.
-
-First we'll create a URL generator using the basic ``PageURL`` class, which
-works with all frameworks and has no dependencies.  It creates URLs by
-overriding the 'page' query parameter. ::
-
-    # Instantiate the URL generator, and call it to see what it does.
-    >>> url_for_page = PageURL("/articles/2013", {"page": "3"})
-    >>> url_for_page(page=2)
-    '/articles/2013?page=2'
+- The collection of items to pick a range from. Usually just a list.
+- The page number we want to display. Default is 1: the first page.
+- Optional: A URL generator callback. If you are using this module for a web application
+  you will want to offer your user a list of pages with links that lead to other pages.
+  This link list can be created using the Page.pager() method.
+  This module comes with a little logic that tries to create or alter a *page* parameter
+  if you pass a URL. For example if you provide the URL "http://yourapplication/phonebook/$page"
+  then for the third page it will create "http://yourapplication/phonebook/3".
 
 Now we can create a collection and instantiate the Page::
 
@@ -48,7 +37,7 @@ Now we can create a collection and instantiate the Page::
     >>> my_page
     Page:
     Collection type:  <type 'list'>
-    (Current) page:   3
+    Current page:     3
     First item:       41
     Last item:        60
     First page:       1
@@ -84,44 +73,18 @@ documentation on ``Page`` and ``Page.pager()``.
 URL generator
 -------------
 
-The constructor's ``url`` argument is a callback that returns URLs to other
-pages. It's required when using the ``Page.pager()`` method except under
-Pylons, where it will fall back to ``pylons.url.current`` (Pylons 1) and then
-``routes.url_for`` (Pylons 0.9.7).  If none of these are available, you'll get
-an exception "NotImplementedError: no URL generator available".
+The constructor's ``url`` argument is a callback that returns URLs to other pages. It's required
+when using the ``Page.pager()`` method except under Pylons, where it will fall back to
+``pylons.url.current`` (Pylons 1) and then ``routes.url_for`` (Pylons 0.9.7). If none of these are
+available, you'll get an exception "NotImplementedError: no URL generator available".
 
-WebHelpers 1.3 introduces a few URL generators for convenience. **PageURL** is
-described above. **PageURL_WebOb** takes a ``webobb.Request`` object, and is
-suitable for Pyramid, Pylons, TurboGears, and other frameworks that have a
-WebOb-compatible Request object. Both of these classes assume that the page
-number is in the 'page' query parameter.
+WebHelpers 1.3 introduces a few URL generators for convenience. **PageURL** is described above.
+**PageURL_WebOb** takes a ``webobb.Request`` object, and is suitable for Pyramid, Pylons,
+TurboGears, and other frameworks that have a WebOb-compatible Request object. Both of these classes
+assume that the page number is in the 'page' query parameter.
 
-Here's an example for Pyramid and other WebOb-compatible frameworks::
-
-    # Assume ``request`` is the current request.
-    import webhelpers.paginate as paginate
-    current_page = int(request.params["page"])
-    q = SOME_SQLALCHEMY_QUERY
-    page_url = paginate.PageURL_WebOb(request)
-    records = paginate.Page(q, current_page, url=page_url)
-
-If the page number is in the URL path, you'll have to use a framework-specific
-URL generator. For instance, in Pyramid if the current route is
-"/articles/{id}/page/{page}" and the current URL is 
-"/articles/ABC/page/3?print=1", you can use Pyramid's "current_route_url"
-function as follows::
-
-    # Assume ``request`` is the current request.
-    import webhelpers.paginate as paginate
-    from pyramid.url import current_route_url
-    def page_url(page):
-        return current_route_url(request, page=page, _query=request.GET)
-    q = SOME_SQLALCHEMY_QUERY
-    current_page = int(request.matchdict["page"])
-    records = Page(q, current_page, url=page_url)
-
-This overrides the 'page' path variable, while leaving the 'id' variable and
-the query string intact.
+This overrides the 'page' path variable, while leaving the 'id' variable and the query string
+intact.
 
 The callback API is simple. 
 
@@ -130,22 +93,20 @@ The callback API is simple.
 2. It should return the URL for that page.  
 
 3. If you're using AJAX 'partial' functionality described in the ``Page.pager``
-   docstring, the callback should also accept a 'partial' argument and, if
-   true, set a query parameter 'partial=1'.
+   docstring, the callback should also accept a 'partial' argument and, if true, set a query
+   parameter 'partial=1'.
 
 4. If you use the 'page_param' or 'partial_param' argument to ``Page.pager``,
-   the 'page' and 'partial' arguments will be renamed to whatever you specify.
-   In this case, the callback would also have to expect these other argument
-   names.
+   the 'page' and 'partial' arguments will be renamed to whatever you specify. In this case, the
+   callback would also have to expect these other argument names.
 
-The supplied classes adhere to this API in their
-``.__call__`` method, all except the fourth condition. So you can use their
-instances as callbacks as long as you don't use 'page_param' or 'partial_param'.
+The supplied classes adhere to this API in their ``.__call__`` method, all except the fourth
+condition. So you can use their instances as callbacks as long as you don't use 'page_param' or
+'partial_param'.
 
-For convenience in writing callbacks that update the 'page' query parameter, a
-``make_page_url`` function is available that assembles the pieces into a
-complete URL. Other callbacks may find ``webhelpers.utl.update_params`` useful,
-which overrides query parameters on a more general basis.
+For convenience in writing callbacks that update the 'page' query parameter, a ``make_page_url``
+function is available that assembles the pieces into a complete URL. Other callbacks may find
+``webhelpers.utl.update_params`` useful, which overrides query parameters on a more general basis.
 
 
 Can I use AJAX / AJAH?
@@ -156,20 +117,13 @@ Yes. See *partial_param* and *onclick* in ``Page.pager()``.
 Notes
 -------
 
-Page numbers and item numbers start at 1. This concept has been used
-because users expect that the first page has number 1 and the first item
-on a page also has number 1. So if you want to use the page's items by
-their index number please note that you have to subtract 1.
+Page numbers and item numbers start at 1. This concept has been used because users expect that the
+first page has number 1 and the first item on a page also has number 1. So if you want to use the
+page's items by their index number please note that you have to subtract 1.
 
-This module is the successor to the obsolete ``webhelpers.pagination``
-module.  It is **NOT** API compatible.
-
-This module is based on the code from
-http://workaround.org/cgi-bin/hg-paginate that is known at the
-"Paginate" module on PyPI. It was written by Christoph Haas
-<email@christoph-haas.de>, and modified by Christoph Haas and Mike Orr for
-WebHelpers. (c) 2007-2011.
-"""
+This module is based on the code from http://workaround.org/cgi-bin/hg-paginate that is known at the
+"Paginate" module on PyPI. It was written by Christoph Haas <email@christoph-haas.de>, and modified
+by Christoph Haas and Mike Orr for WebHelpers. (c) 2007-2011. """
 
 import re
 from string import Template
@@ -177,44 +131,11 @@ import urllib
 import cgi
 import warnings
 
-INCOMPATIBLE_COLLECTION_TYPE = """\
-Sorry, your collection type is not supported by the paginate module. You can
-provide a list, a tuple, a SQLAlchemy " "select object or a SQLAlchemy
-ORM-query object."""
-
-# import SQLAlchemy if available
-try:
-    import sqlalchemy
-    import sqlalchemy.orm   # Some users report errors if this is not imported.
-except:
-    sqlalchemy_available = False
-    sqlalchemy_version = None
-else:
-    sqlalchemy_available = True
-    sqlalchemy_version = sqlalchemy.__version__
-
-def get_wrapper(obj, sqlalchemy_session=None):
+def get_wrapper(obj):
     """
     Auto-detect the kind of object and return a list/tuple
     to access items from the collection.
     """
-    # If the collection is a sequence we can use it directly
-    if isinstance(obj, (list, tuple)):
-        return obj
-
-    # Is SQLAlchemy 0.4 or better available? (0.3 is not supported - sorry)
-    # Note: SQLAlchemy objects aren't sliceable, so this has to be before
-    # the next if-stanza
-    if sqlalchemy_available and sqlalchemy_version[:3] != '0.3':
-        # Is the collection a query?
-        if isinstance(obj, sqlalchemy.orm.query.Query):
-            return _SQLAlchemyQuery(obj)
-
-        # Is the collection an SQLAlchemy select object?
-        if isinstance(obj, sqlalchemy.sql.expression.CompoundSelect) \
-            or isinstance(obj, sqlalchemy.sql.expression.Select):
-                return _SQLAlchemySelect(obj, sqlalchemy_session)
-
     # If object is iterable we can use it.  (This is not true if it's
     # non-sliceable but there doesn't appear to be a way to test for that. We'd
     # have to call .__getitem__ with a slice and guess what the exception
@@ -222,66 +143,20 @@ def get_wrapper(obj, sqlalchemy_session=None):
     required_methods = ["__iter__", "__len__", "__getitem__"]
     for meth in required_methods:
         if not hasattr(obj, meth):
-            break
-    else:
-        return obj
+            raise TypeError(INCOMPATIBLE_COLLECTION_TYPE)
 
-    raise TypeError(INCOMPATIBLE_COLLECTION_TYPE)
+    return obj
 
-class _SQLAlchemySelect(object):
-    """
-    Iterable that allows to get slices from an SQLAlchemy Select object
-    """
-    def __init__(self, obj, sqlalchemy_session=None):
-        session_types = (
-            sqlalchemy.orm.scoping.ScopedSession,
-            sqlalchemy.orm.Session)
-        if not isinstance(sqlalchemy_session, session_types):
-            raise TypeError("If you want to page an SQLAlchemy 'select' object then you "
-                    "have to provide a 'sqlalchemy_session' argument. See also: "
-                    "http://www.sqlalchemy.org/docs/04/session.html")
-
-        self.sqlalchemy_session = sqlalchemy_session
-        self.obj = obj
-
-    def __getitem__(self, range):
-        if not isinstance(range, slice):
-            raise Exception, "__getitem__ without slicing not supported"
-        offset = range.start
-        limit = range.stop - range.start
-        select = self.obj.offset(offset).limit(limit)
-        return self.sqlalchemy_session.execute(select).fetchall()
-
-    def __len__(self):
-        return self.sqlalchemy_session.execute(self.obj).rowcount
-
-class _SQLAlchemyQuery(object):
-    """
-    Iterable that allows to get slices from an SQLAlchemy Query object
-    """
-    def __init__(self, obj):
-        self.obj = obj
-
-    def __getitem__(self, range):
-        if not isinstance(range, slice):
-            raise Exception, "__getitem__ without slicing not supported"
-        return self.obj[range]
-
-    def __len__(self):
-        return self.obj.count()
 
 # Since the items on a page are mainly a list we subclass the "list" type
 class Page(list):
-    """A list/iterator of items representing one page in a larger
-    collection.
+    """A list/iterator of items representing one page in a larger collection.
 
-    An instance of the "Page" class is created from a collection of things. 
+    An instance of the "Page" class is created from a _collection_ which is any
+    list-like object that allows random access to its elements. You can just use a list.
+    
     The instance works as an iterator running from the first item to the 
     last item on the given page. The collection can be:
-
-    - a sequence
-    - an SQLAlchemy query - e.g.: Session.query(MyModel)
-    - an SQLAlchemy select - e.g.: sqlalchemy.select([my_table])
 
     A "Page" instance maintains pagination logic associated with each 
     page, where it begins, what the first/last item on the page is, etc. 
@@ -290,8 +165,6 @@ class Page(list):
 
     **WARNING:** Unless you pass in an item_count, a count will be 
     performed on the collection every time a Page instance is created. 
-    If using an ORM, it's advised to pass in the number of items in the 
-    collection if that number is known.
 
     Instance attributes:
 
@@ -326,16 +199,13 @@ class Page(list):
         Index of last item on the current page
         
     """
-    def __init__(self, collection, page=1, items_per_page=20,
-        item_count=None, sqlalchemy_session=None, presliced_list=False,
-        url=None, **kwargs):
+    def __init__(self, collection, page=1, items_per_page=20, item_count=None, url=None, **kwargs):
         """Create a "Page" instance.
 
         Parameters:
 
         collection
-            Sequence, SQLAlchemy select object or SQLAlchemy ORM-query
-            representing the collection of items to page through.
+            Sequence representing the collection of items to page through.
 
         page
             The requested page number - starts with 1. Default: 1.
@@ -350,17 +220,6 @@ class Page(list):
             the number of elements in the collection every time a "Page"
             is created. Giving this parameter will speed up things.
         
-        presliced_list (optional)
-            Indicates whether the collection, when a list, has already
-            been sliced for the current viewing page, and thus should
-            *not* be sliced again.
-
-        sqlalchemy_session (optional)
-            If you want to use an SQLAlchemy (0.4) select object as a
-            collection then you need to provide an SQLAlchemy session object.
-            Select objects do not have a database connection attached so it
-            would not be able to execute the SELECT query.
-
         url (optional)
             The URL of the page currently shown to the user.
             This is used only by ``.pager()``.
@@ -370,24 +229,12 @@ class Page(list):
         # URL generation is now done within this module. So tell the developer
         # that passing a URL generation function is deprecated. Instead a string
         # URL is expected.
-        if hasattr(url, '__call__'):
-            warnings.warn("""Passing URL generators as the 'url' parameter is no longer
-                    supported. Please pass the current URL as a string instead.""")
-            self.url = url()
-        else:
-            self.url = url
-
-        # 'page_nr' is deprecated.
-        if 'page_nr' in kwargs:
-            warnings.warn("'page_nr' is deprecated. Please use 'page' instead.")
-            page = kwargs['page_nr']
-            del kwargs['page_nr']
-
-        # 'current_page' is also deprecated.
-        if 'current_page' in kwargs:
-            warnings.warn("'current_page' is deprecated. Please use 'page' instead.")
-            page = kwargs['current_page']
-            del kwargs['current_page']
+        #if hasattr(url, '__call__'):
+        #    warnings.warn("""Passing URL generators as the 'url' parameter is no longer
+        #            supported. Please pass the current URL as a string instead.""")
+        #    self.url = url()
+        #else:
+        #    self.url = url
 
         # Safe the kwargs class-wide so they can be used in the pager() method
         self.kwargs = kwargs
@@ -399,7 +246,7 @@ class Page(list):
         # functions to be able to get slices.
         if collection is not None:
             # Determine the type of collection and use a wrapper for ORMs
-            self.collection = get_wrapper(collection, sqlalchemy_session)
+            self.collection = collection
         else:
             self.collection = []
 
@@ -422,7 +269,7 @@ class Page(list):
         # Compute the number of the first and last available page
         if self.item_count > 0:
             self.first_page = 1
-            self.page_count = ((self.item_count - 1) / self.items_per_page) + 1
+            self.page_count = ((self.item_count - 1) // self.items_per_page) + 1
             self.last_page = self.first_page + self.page_count - 1
 
             # Make sure that the requested page number is the range of valid pages
@@ -441,18 +288,13 @@ class Page(list):
             # We use list() so that the items on the current page are retrieved
             # only once. Otherwise it would run the actual SQL query everytime
             # .items would be accessed.
-            if presliced_list:
-                self.items = self.collection
-            else:
-                try:
-                    first = self.first_item - 1
-                    last = self.last_item
-                    self.items = list(self.collection[first:last])
-                except TypeError, e:
-                    if str(e) == "unhashable type":
-                        # Assume this means collection is unsliceable.
-                        raise TypeError(INCOMPATIBLE_COLLECTION_TYPE)
-                    raise
+            try:
+                first = self.first_item - 1
+                last = self.last_item
+                self.items = list(self.collection[first:last])
+            except TypeError(e):
+                raise TypeError("Your collection of type %s cannot be handled by paginate.",
+                                type(self.collection))
 
             # Links to previous and next page
             if self.page > self.first_page:
@@ -483,7 +325,7 @@ class Page(list):
     def __repr__(self):
         return ("Page:\n"
             "Collection type:  %(type)s\n"
-            "(Current) page:   %(page)s\n"
+            "Current page:     %(page)s\n"
             "First item:       %(first_item)s\n"
             "Last item:        %(last_item)s\n"
             "First page:       %(first_page)s\n"
@@ -612,7 +454,7 @@ class Page(list):
 
         show_if_single_page:
             if True the navigator will be shown even if there is only 
-            one page
+            one page.
             
             Default: False
 
@@ -699,7 +541,6 @@ class Page(list):
         if self.page_count == 0 or (self.page_count == 1 and not show_if_single_page):
             return ''
 
-
         # Replace ~...~ in token format by range of pages
         result = re.sub(r'~(\d+)~', self._range, format)
 
@@ -738,8 +579,7 @@ class Page(list):
             regexp_match.group(1) as a string
 
         This function is supposed to be called as a callable in 
-        re.sub.
-        
+        re.sub to replace occurences of ~\d+~ by a sequence of page links.
         """
         radius = int(regexp_match.group(1))
 
@@ -761,18 +601,20 @@ class Page(list):
         # and the currently displayed page range
         if leftmost_page - self.first_page > 1:
             # Wrap in a SPAN tag if nolink_attr is set
-            text = '..'
             if self.dotdot_attr:
                 text = make_html_tag('span', **self.dotdot_attr) + text + '</span>'
+            else:
+                text = '..'
             nav_items.append(text)
 
-        for thispage in xrange(leftmost_page, rightmost_page+1):
-            # Hilight the current page number and do not use a link
+        for thispage in range(leftmost_page, rightmost_page+1):
+            # Highlight the current page number and do not use a link
             if thispage == self.page:
-                text = '%s' % (thispage,)
                 # Wrap in a SPAN tag if nolink_attr is set
                 if self.curpage_attr:
                     text = make_html_tag('span', **self.curpage_attr) + text + '</span>'
+                else:
+                    text = '%s' % (thispage,)
                 nav_items.append(text)
             # Otherwise create just a link to that page
             else:
@@ -782,10 +624,11 @@ class Page(list):
         # Insert dots if there are pages between the displayed
         # page numbers and the end of the page range
         if self.last_page - rightmost_page > 1:
-            text = '..'
             # Wrap in a SPAN tag if nolink_attr is set
             if self.dotdot_attr:
                 text = make_html_tag('span', **self.dotdot_attr) + text + '</span>'
+            else:
+                text = '..'
             nav_items.append(text)
 
         # Create a link to the very last page (unless we are on the last
@@ -976,4 +819,3 @@ def url_generator(url, **params):
 
 # TODO: add support for CouchDB databases (http://guide.couchdb.org/editions/1/de/recipes.html)
 # TODO: find a better way to abstract the Page. e.g. subclass Page as PageSqlalchemy or PageCouchdb
-
