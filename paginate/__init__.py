@@ -1,3 +1,6 @@
+# Copyright (c) 2007-2012 Christoph Haas <email@christoph-haas.de>
+# See the file LICENSE for copying permission.
+
 """
 paginate: helps split up large collections into individual pages
 ================================================================
@@ -102,6 +105,15 @@ Page numbers and item numbers start at 1. This concept has been used because use
 first page has number 1 and the first item on a page also has number 1. So if you want to use the
 page's items by their index number please note that you have to subtract 1.
 """
+
+__author__ = "Christoph Haas"
+__copyright__ = "Copyright 2007-2012 Christoph Haas"
+__credits__ = ["Mike Orr"]
+__license__ = "MIT"
+__version__ = "0.4.0"
+__maintainer__ = "Christoph Haas"
+__email__ = "email@christoph-haas.de"
+__status__ = "Beta"
 
 
 import re
