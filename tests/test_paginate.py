@@ -10,29 +10,6 @@ from nose.tools import eq_, raises
 
 import paginate
 
-# TODO: test Page(dict(one=1)) -> TypeError: Your collection of type <class 'dict'> cannot be handled by paginate.
-
-# pager()        link_attr={'class':'pager_link'}, curpage_attr={'class':'pager_curpage'},
-#   dotdot_attr={'class':'pager_dotdot'},
-
-
-def test_make_html_tag1():
-    """Test the HTML tag generator with a SPAN tag."""
-    tag = paginate.make_html_tag('span',style='green')
-    assert tag == '<span style="green">'
-
-def test_make_html_tag2():
-    """Test the HTML tag generator with an A tag."""
-    tag = paginate.make_html_tag('a',href='http://example.org/')
-    assert tag == '<a href="http://example.org/">'
-
-def test_make_html_tag3():
-    """Test the HTML tag generator with a CSS-classed DIV tag."""
-    tag = paginate.make_html_tag('div', _class='red', id='maindiv')
-    assert tag == '<div class="red" id="maindiv">'
-
-
-
 def test_empty_list():
     """Test whether an empty list is handled correctly."""
     items = []
@@ -95,42 +72,8 @@ def test_make_html_tag():
     eq_(paginate.make_html_tag('a',href="/another/page"), '<a href="/another/page">')
     eq_(paginate.make_html_tag('a',href="/another/page",text="foo"), '<a href="/another/page">foo</a>')
     eq_(paginate.make_html_tag('a',href="/another/page",text="foo",onclick="$('#mydiv').focus();"), """<a href="/another/page" onclick="$('#mydiv').focus();">foo</a>""")
-
-#def test_make_page_url():
-#    purl = paginate.make_page_url("/articles", {}, 2)
-#    eq_(purl, "/articles?page=2")
-#    purl = paginate.make_page_url("/articles", {"foo": "bar"}, 2)
-#    eq_(purl, "/articles?foo=bar&page=2")
-#    params = {"foo": "bar", "page": "1"}
-#    purl = paginate.make_page_url("/articles", params, 2)
-#    eq_(purl, "/articles?foo=bar&page=2")
-
-#def test_pageurl():
-#    purl = paginate.PageURL("/articles", {})
-#    eq_(purl(2), "/articles?page=2")
-#    purl = paginate.PageURL("/articles", {"foo": "bar"})
-#    eq_(purl(2), "/articles?foo=bar&page=2")
-#    params = {"foo": "bar", "page": "1"}
-#    purl = paginate.PageURL("/articles", params)
-#    eq_(purl(2), "/articles?foo=bar&page=2")
-#
-#class DummyRequest(object):
-#    """A fake ``webob.Request`` for test_pageurl_webob``."""
-#    def __init__(self, application_url, path, GET):
-#        self.application_url = application_url
-#        self.path = path
-#        self.GET = GET
-#
-#def test_pageurl_webob():
-#    pass
-    #path = "/articles"
-    #application_url = "http://localhost:5000" + path
-    #params = MultiDict({"blah": "boo"})
-    #request = DummyRequest(application_url, path, params)
-    #purl = paginate.PageURL_WebOb(request)
-    #eq_(purl(2), "/articles?blah=boo&page=2")
-    #purl = paginate.PageURL_WebOb(request, qualified=True)
-    #eq_(purl(2), "http://localhost:5000/articles?blah=boo&page=2")
+    eq_(paginate.make_html_tag('span',style='green'), '<span style="green">')
+    eq_(paginate.make_html_tag('div', _class='red', id='maindiv'), '<div class="red" id="maindiv">')
 
 
 class UnsliceableSequence(object):
@@ -143,7 +86,6 @@ class UnsliceableSequence(object):
 
    def __len__(self):
        return len(self.l)
-
 
 class UnsliceableSequence2(UnsliceableSequence):
    def __getitem__(self, key):
@@ -166,3 +108,6 @@ class TestCollectionTypes(unittest.TestCase):
     def test_unsliceable_sequence2(self):
         paginate.Page(UnsliceableSequence2(self.rng))
 
+    @raises(TypeError)
+    def test_unsliceable_sequence3(self):
+        paginate.Page(dict(one=1))
