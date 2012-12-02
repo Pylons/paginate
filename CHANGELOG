@@ -17,7 +17,8 @@ Changes:
 - 'page_nr' and 'current_page' had been deprecated already and are now removed. Please use 'page'
   instead.
 - No automatic URL generation. You need to pass a 'url' argument to the Page.pager() method
-  containing a $page placeholder where you want the page number to be put in
+  containing a $page placeholder where you want the page number to be put in. Beware that the URL
+  is not quote-escaped any further.
 - The Page.pager() does not automatically add CSS classes any more. If you want the old
   behavior you need to pass these parameters explicitly:
   link_attr={'class':'pager_link'}
@@ -27,3 +28,9 @@ Changes:
   AJAX/partial updates in the 'url' parameter.
 - The page_param parameter from Page.pager() is also gone as URL generation has been severely
   simplified.
+- The string returned from Page.pager() consists of escaped HTML already. So you need to tell
+  your web framework to use the string verbatim and without further escaping.
+  The parameters symbol_first, symbol_last, symbol_previous and symbol_next use
+  &lt; and &gt; instead of "<" and ">" now.
+- Page.__repr__ now returns a brief representation. E.g. <paginate.Page: 1 of 1>
+  Page.__str__ returns the verbose view you may be used to.

@@ -71,3 +71,41 @@ Add AJAX tutorial
 
     p.pager(url="/index.php?page=$page", link_attr=dict(onclick="$('target').load('/ding/dong?page=$page'"))
 
+SQLAlchemy tests
+
+
+#class TestSQLAlchemyCollectionTypes(unittest.TestCase):
+#    def setUp(self):
+#        try:
+#            import sqlalchemy as sa
+#            import sqlalchemy.orm as orm
+#        except ImportError:
+#            raise SkipTest()
+#        self.engine = engine = sa.create_engine("sqlite://") # Memory database
+#        self.sessionmaker = orm.sessionmaker(bind=engine)
+#        self.metadata = metadata = sa.MetaData(bind=engine)
+#        self.notes = notes = sa.Table("Notes", metadata,
+#            sa.Column("id", sa.Integer, primary_key=True))
+#        class Note(object):
+#            pass
+#        self.Note = Note
+#        notes.create()
+#        orm.mapper(Note, notes)
+#        insert = notes.insert()
+#        records = [{"id": x} for x in range(1, 101)]
+#        engine.execute(insert, records)
+#            
+#    def tearDown(self):
+#        import sqlalchemy as sa
+#        import sqlalchemy.orm as orm
+#        orm.clear_mappers()
+#        self.notes.drop()
+#
+#    def test_sqlalchemy_orm(self):
+#        session = self.sessionmaker()
+#        q = session.query(self.Note).order_by(self.Note.id)
+#        page = paginate.Page(q)
+#        records = list(page)
+#        eq_(records[0].id, 1)
+#        eq_(records[-1].id, 20)
+
