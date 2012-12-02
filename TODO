@@ -1,30 +1,10 @@
-Remove any relation to webhelpers or historical Pylons functionality.
-Paginate must work standalone.
-
-Add license headers everywhere (MIT).
-
-Provide simple URL generator. Let the user declare their own URL generation function instead.
-Like a callback function with the page number as a parameter.
-
-Move the **kwargs of pager into a dictionary parameter pager_linkattr (more explicit)
+Prepare a method that can be overriden for extension modules like paginate-sqlalchemy
+(e.g. get_wrapper)
 
 Move SQLAlchemy code as an extension into paginate.sqlalchemy
-
 Create test with setup/teardown code for paginate.sqlalchemy.SqlalchemyPage (e.g. sqlite)
 
-Perhaps move paginate.ext_sqlalchemy into external modules like paginate_sqlalchemy
-
-Make sure that the CHANGELOG reflects all relevant API changes.
-
-Improve handling of AJAX links. No magical "partial" argument.
-
-Ensure that escaping of ' and " is not causing headaches in make_html_tag.
-In [8]: make_html_tag('a', foo=3, bar=123, onclick="$('#bla').doStuff()")
-Out[8]: '<a foo="3" bar="123" onclick="$(\'#bla\').doStuff()">'
-
 add support for CouchDB databases (http://guide.couchdb.org/editions/1/de/recipes.html)
-
-Make sure that the docstring are in good shape.
 
 Upload to PyPi
 
