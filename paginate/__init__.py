@@ -10,9 +10,11 @@ What is pagination?
 
 This module helps split large lists of items into pages. The user is shown one page at a time and
 can navigate to other pages. Imagine you are offering a company phonebook and let the user search
-the entries. The search result may contains 23 entries but you want to display no more than 10
-entries at once. The first page contains entries 1-10, the second 11-20 and the third 21-23. See the
-documentation of the "Page" class for more information.
+the entries. The entire search result may contains 23 entries but you want to display no more than
+10 entries at once. The first page contains entries 1-10, the second 11-20 and the third 21-23.
+Each "Page" instance represents the items of one of these three pages.
+
+See the documentation of the "Page" class for more information.
 
 How do I use it?
 ------------------
@@ -20,24 +22,18 @@ How do I use it?
 A page of items is represented by the *Page* object. A *Page* gets initialized with these arguments:
 
 - The collection of items to pick a range from. Usually just a list.
-- The page number we want to display. Default is 1: the first page.
-- Optional: A URL generator callback. If you are using this module for a web application
-  you will want to offer your user a list of pages with links that lead to other pages.
-  This link list can be created using the Page.pager() method.
-  This module comes with a little logic that tries to create or alter a *page* parameter
-  if you pass a URL. For example if you provide the URL "http://yourapplication/phonebook/$page"
-  then for the third page it will create "http://yourapplication/phonebook/3".
+- The page number you want to display. Default is 1: the first page.
 
-Now we can create a collection and instantiate the Page::
+Now we can make up a collection and create a Page instance of it::
 
     # Create a sample collection of 1000 items
-    >>> my_collection = range(1000)
+    >> my_collection = range(1000)
 
     # Create a Page object for the 3rd page (20 items per page is the default)
-    >>> my_page = Page(my_collection, page=3)
+    >> my_page = Page(my_collection, page=3)
 
-    # The page object can be printed directly to get its details
-    >>> my_page
+    # The page object can be printed as a string to get its details
+    >> str(my_page)
     Page:
     Collection type:  <type 'range'>
     Current page:     3
@@ -52,16 +48,14 @@ Now we can create a collection and instantiate the Page::
     Number of pages:  50
 
     # Print a list of items on the current page
-    >>> my_page.items
+    >> my_page.items
     [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59]
 
     # The *Page* object can be used as an iterator:
-    >>> for my_item in my_page: print(my_item)
+    >> for my_item in my_page: print(my_item)
     40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59
 
-    # The .pager() method returns an HTML fragment with links to surrounding
-    # pages.
-    # [The ">>" prompt is to hide untestable examples from doctest.]
+    # The .pager() method returns an HTML fragment with links to surrounding pages.
     >> my_page.pager(url="http://example.org/foo/page=$page")
 
     <a href="http://example.org/foo/page=1">1</a>
@@ -122,29 +116,22 @@ from string import Template
 
 # Since the items on a page are mainly a list we subclass the "list" type
 class Page(list):
-    """A list/iterator of items representing one page in a larger collection.
+    """A list/iterator representing the items on one page of a larger collection.
 
     An instance of the "Page" class is created from a _collection_ which is any
-    list-like object that allows random access to its elements. You can just use a list.
+    list-like object that allows random access to its elements.
     
-    The instance works as an iterator running from the first item to the 
-    last item on the given page. The collection can be:
+    The instance works as an iterator running from the first item to the last item on the given
+    page. The Page.pager() method creates a link list allowing the user to go to other pages.
 
-    A "Page" instance maintains pagination logic associated with each 
-    page, where it begins, what the first/last item on the page is, etc. 
-    The pager() method creates a link list allowing the user to go to
-    other pages.
-
-    **WARNING:** Unless you pass in an item_count, a count will be 
-    performed on the collection every time a Page instance is created. 
-
-    Instance attributes:
-
-    original_collection
-        Points to the collection object being paged through
+    A "Page" does not only carry the items on a certain page. It gives you additional information
+    about the page in these "Page" object attributes:
 
     item_count
         Number of items in the collection
+        
+        **WARNING:** Unless you pass in an item_count, a count will be 
+        performed on the collection every time a Page instance is created. 
 
     page
         Number of the current page
@@ -195,17 +182,10 @@ class Page(list):
             The total number of items in the collection - if known.
             If this parameter is not given then the paginator will count
             the number of elements in the collection every time a "Page"
-            is created. Giving this parameter will speed up things.
-
-        Further keyword arguments are used as link arguments in the pager().
+            is created. Giving this parameter will speed up things. In a busy
+            real-life application you may want to cache the number of items.
         """
-        # Save a reference to the collection
-        self.original_collection = collection
-
-        # Decorate the ORM/sequence object with __getitem__ and __len__
-        # functions to be able to get slices.
         if collection is not None:
-            # Determine the type of collection and use a wrapper for ORMs
             self.collection = collection
         else:
             self.collection = []
@@ -248,8 +228,8 @@ class Page(list):
             # We subclassed "list" so we need to call its init() method
             # and fill the new list with the items to be displayed on the page.
             # We use list() so that the items on the current page are retrieved
-            # only once. Otherwise it would run the actual SQL query everytime
-            # .items would be accessed.
+            # only once. In an SQL context that could otherwise lead to running the same
+            # SQL query every time items would be accessed.
             try:
                 first = self.first_item - 1
                 last = self.last_item
@@ -351,63 +331,54 @@ class Page(list):
             $page which will be replaced by the actual page number.
 
         symbol_first
-            String to be displayed as the text for the %(link_first)s 
-            link above.
+            String to be displayed as the text for the $link_first link above.
 
             Default: '&lt;&lt;' (<<)
 
         symbol_last
-            String to be displayed as the text for the %(link_last)s 
-            link above.
+            String to be displayed as the text for the $link_last link above.
 
             Default: '&gt;&gt;' (>>)
 
         symbol_previous
-            String to be displayed as the text for the %(link_previous)s 
-            link above.
+            String to be displayed as the text for the $link_previous link above.
 
             Default: '&lt;' (<)
 
         symbol_next
-            String to be displayed as the text for the %(link_next)s 
-            link above.
+            String to be displayed as the text for the $link_next link above.
 
             Default: '&gt;' (>)
 
         separator:
-            String that is used to separate page links/numbers in the 
-            above range of pages.
+            String that is used to separate page links/numbers in the above range of pages.
 
             Default: ' '
 
         show_if_single_page:
-            if True the navigator will be shown even if there is only 
-            one page.
+            if True the navigator will be shown even if there is only one page.
             
             Default: False
 
         link_attr (optional)
-            A dictionary of attributes that get added to A-HREF links 
-            pointing to other pages. Can be used to define a CSS style 
-            or class to customize the look of links.
+            A dictionary of attributes that get added to A-HREF links pointing to other pages. Can
+            be used to define a CSS style or class to customize the look of links.
 
             Example: { 'style':'border: 1px solid green' }
             Example: { 'class':'pager_link' }
 
         curpage_attr (optional)
-            A dictionary of attributes that get added to the current 
-            page number in the pager (which is obviously not a link).
-            If this dictionary is not empty then the elements
-            will be wrapped in a SPAN tag with the given attributes.
+            A dictionary of attributes that get added to the current page number in the pager (which
+            is obviously not a link). If this dictionary is not empty then the elements will be
+            wrapped in a SPAN tag with the given attributes.
 
             Example: { 'style':'border: 3px solid blue' }
             Example: { 'class':'pager_curpage' }
 
         dotdot_attr (optional)
-            A dictionary of attributes that get added to the '..' string
-            in the pager (which is obviously not a link). If this 
-            dictionary is not empty then the elements will be wrapped in 
-            a SPAN tag with the given attributes.
+            A dictionary of attributes that get added to the '..' string in the pager (which is
+            obviously not a link). If this dictionary is not empty then the elements will be wrapped
+            in a SPAN tag with the given attributes.
 
             Example: { 'style':'color: #808080' }
             Example: { 'class':'pager_dotdot' }
@@ -434,7 +405,7 @@ class Page(list):
         # Replace ~...~ in token format by range of pages
         result = re.sub(r'~(\d+)~', self._range, format)
 
-        # Interpolate '%' variables
+        # Interpolate '$' variables
         result = Template(result).safe_substitute({
             'first_page': self.first_page,
             'last_page': self.last_page,
@@ -489,7 +460,7 @@ class Page(list):
         # Insert dots if there are pages between the first page
         # and the currently displayed page range
         if leftmost_page - self.first_page > 1:
-            # Wrap in a SPAN tag if nolink_attr is set
+            # Wrap in a SPAN tag if dotdot_attr is set
             text = '..'
             if self.dotdot_attr:
                 text = make_html_tag('span', **self.dotdot_attr) + text + '</span>'
@@ -498,7 +469,7 @@ class Page(list):
         for thispage in range(leftmost_page, rightmost_page+1):
             # Highlight the current page number and do not use a link
             if thispage == self.page:
-                # Wrap in a SPAN tag if nolink_attr is set
+                # Wrap in a SPAN tag if curpage_attr is set
                 text = '%s' % (thispage,)
                 if self.curpage_attr:
                     text = make_html_tag('span', **self.curpage_attr) + text + '</span>'
@@ -511,7 +482,7 @@ class Page(list):
         # Insert dots if there are pages between the displayed
         # page numbers and the end of the page range
         if self.last_page - rightmost_page > 1:
-            # Wrap in a SPAN tag if nolink_attr is set
+            # Wrap in a SPAN tag if dotdot_attr is set
             text = '..'
             if self.dotdot_attr:
                 text = make_html_tag('span', **self.dotdot_attr) + text + '</span>'
