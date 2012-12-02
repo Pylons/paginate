@@ -141,10 +141,16 @@ class Page(list):
         Maximal number of items displayed on a page
 
     first_page
-        Number of the first page - starts with 1
+        Number of the first page - usually 1 :)
 
     last_page
         Number of the last page
+        
+    previous_page
+        Number of the previous page. If this is the first page it returns None.
+
+    next_page
+        Number of the next page. If this is the first page it returns None.
 
     page_count
         Number of pages
@@ -157,7 +163,6 @@ class Page(list):
 
     last_item
         Index of last item on the current page
-        
     """
     def __init__(self, collection, page=1, items_per_page=20, item_count=None):
         """Create a "Page" instance.
@@ -267,7 +272,7 @@ class Page(list):
         list.__init__(self, self.items)
 
 
-    def __repr__(self):
+    def __str__(self):
         return ("Page:\n"
             "Collection type:  %(type)s\n"
             "Current page:     %(page)s\n"
@@ -293,6 +298,9 @@ class Page(list):
             'item_count':self.item_count,
             'page_count':self.page_count,
             })
+
+    def __repr__(self):
+        return("<paginate.Page:%s of %s>" % (self.page, self.page_count))
 
     def pager(self, format='~2~', url=None, show_if_single_page=False, separator=' ',
         symbol_first='&lt;&lt;', symbol_last='&gt;&gt;', symbol_previous='&lt;', symbol_next='&gt;',
@@ -334,25 +342,25 @@ class Page(list):
             String to be displayed as the text for the %(link_first)s 
             link above.
 
-            Default: '<<'
+            Default: '&lt;&lt;' (<<)
 
         symbol_last
             String to be displayed as the text for the %(link_last)s 
             link above.
 
-            Default: '>>'
+            Default: '&gt;&gt;' (>>)
 
         symbol_previous
             String to be displayed as the text for the %(link_previous)s 
             link above.
 
-            Default: '<'
+            Default: '&lt;' (<)
 
         symbol_next
             String to be displayed as the text for the %(link_next)s 
             link above.
 
-            Default: '>'
+            Default: '&gt;' (>)
 
         separator:
             String that is used to separate page links/numbers in the 
