@@ -1,10 +1,7 @@
 Prepare a method that can be overriden for extension modules like paginate-sqlalchemy
 (e.g. get_wrapper)
 
-Move SQLAlchemy code as an extension into paginate.sqlalchemy
-Create test with setup/teardown code for paginate.sqlalchemy.SqlalchemyPage (e.g. sqlite)
-
-add support for CouchDB databases (http://guide.couchdb.org/editions/1/de/recipes.html)
+Move SQLAlchemy code into a separate module paginate-sqlalchemy and subclass paginate.Page() for that purpose.
 
 Upload to PyPi
 
@@ -51,8 +48,11 @@ Add AJAX tutorial
 
     p.pager(url="/index.php?page=$page", link_attr=dict(onclick="$('target').load('/ding/dong?page=$page'"))
 
-SQLAlchemy tests
 
+
+Write SQLAlchemy tests
+
+Create test with setup/teardown code for paginate.sqlalchemy.SqlalchemyPage (e.g. sqlite)
 
 #class TestSQLAlchemyCollectionTypes(unittest.TestCase):
 #    def setUp(self):
@@ -89,3 +89,5 @@ SQLAlchemy tests
 #        eq_(records[0].id, 1)
 #        eq_(records[-1].id, 20)
 
+add support for CouchDB databases (http://guide.couchdb.org/editions/1/de/recipes.html)
+careful: CouchDB is stupid and has very limited and weird behavior when it comes to choosing a certain page of data
