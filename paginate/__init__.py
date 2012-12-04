@@ -235,8 +235,8 @@ class Page(list):
                 last = self.last_item
                 self.items = list(self.collection[first:last])
             except TypeError:
-                raise TypeError("Your collection of type %s cannot be handled by paginate." %
-                                type(self.collection))
+                raise TypeError("Your collection of type "+type(self.collection)+
+                                " cannot be handled by paginate.")
 
             # Links to previous and next page
             if self.page > self.first_page:
@@ -263,36 +263,23 @@ class Page(list):
         # This is a subclass of the 'list' type. Initialise the list now.
         list.__init__(self, self.items)
 
-
     def __str__(self):
         return ("Page:\n"
-            "Collection type:  %(type)s\n"
-            "Current page:     %(page)s\n"
-            "First item:       %(first_item)s\n"
-            "Last item:        %(last_item)s\n"
-            "First page:       %(first_page)s\n"
-            "Last page:        %(last_page)s\n"
-            "Previous page:    %(previous_page)s\n"
-            "Next page:        %(next_page)s\n"
-            "Items per page:   %(items_per_page)s\n"
-            "Number of items:  %(item_count)s\n"
-            "Number of pages:  %(page_count)s\n"
-            % {
-            'type':self.collection_type,
-            'page':self.page,
-            'first_item':self.first_item,
-            'last_item':self.last_item,
-            'first_page':self.first_page,
-            'last_page':self.last_page,
-            'previous_page':self.previous_page,
-            'next_page':self.next_page,
-            'items_per_page':self.items_per_page,
-            'item_count':self.item_count,
-            'page_count':self.page_count,
-            })
+            "Collection type:  "+self.collection_type+"\n"
+            "Current page:     "+self.page+"\n"
+            "First item:       "+self.first_item+"\n"
+            "Last item:        "+self.last_item+"\n"
+            "First page:       "+self.first_page+"\n"
+            "Last page:        "+self.last_page+"\n"
+            "Previous page:    "+self.previous_page+"\n"
+            "Next page:        "+self.next_page+"\n"
+            "Items per page:   "+self.items_per_page+"\n"
+            "Number of items:  "+self.item_count+"\n"
+            "Number of pages:  "+self.page_count+"\n"
+            )
 
     def __repr__(self):
-        return("<paginate.Page:%s of %s>" % (self.page, self.page_count))
+        return("<paginate.Page:{0} of {1}>".format(self.page, self.page_count))
 
     def pager(self, format='~2~', url=None, show_if_single_page=False, separator=' ',
         symbol_first='&lt;&lt;', symbol_last='&gt;&gt;', symbol_previous='&lt;', symbol_next='&gt;',
@@ -470,13 +457,13 @@ class Page(list):
             # Highlight the current page number and do not use a link
             if thispage == self.page:
                 # Wrap in a SPAN tag if curpage_attr is set
-                text = '%s' % (thispage,)
+                text = str(thispage)
                 if self.curpage_attr:
                     text = make_html_tag('span', **self.curpage_attr) + text + '</span>'
                 nav_items.append(text)
             # Otherwise create just a link to that page
             else:
-                text = '%s' % (thispage,)
+                text = str(thispage)
                 nav_items.append( self._pagerlink(thispage, text) )
 
         # Insert dots if there are pages between the displayed
@@ -538,13 +525,13 @@ def make_html_tag(tag, text=None, **params):
         # to be used as a CSS class specification instead of the reserved Python keyword 'class'.
         key = key.lstrip('_')
 
-        params_string += ' %s="%s"' % (key, value)
+        params_string += ' {0}="{1}"'.format(key, value)
 
     # Create the tag string
-    tag_string = '<%s%s>' % (tag, params_string)
+    tag_string = '<{0}{1}>'.format(tag, params_string)
     
     # Add text and closing tag if required.
     if text:
-        tag_string += '%s</%s>' % (text, tag)
+        tag_string += '{0}</{1}>'.format(text, tag)
 
     return tag_string
