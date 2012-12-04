@@ -265,18 +265,18 @@ class Page(list):
 
     def __str__(self):
         return ("Page:\n"
-            "Collection type:  "+self.collection_type+"\n"
-            "Current page:     "+self.page+"\n"
-            "First item:       "+self.first_item+"\n"
-            "Last item:        "+self.last_item+"\n"
-            "First page:       "+self.first_page+"\n"
-            "Last page:        "+self.last_page+"\n"
-            "Previous page:    "+self.previous_page+"\n"
-            "Next page:        "+self.next_page+"\n"
-            "Items per page:   "+self.items_per_page+"\n"
-            "Number of items:  "+self.item_count+"\n"
-            "Number of pages:  "+self.page_count+"\n"
-            )
+            "Collection type:  {0.collection_type}\n"
+            "Current page:     {0.page}\n"
+            "First item:       {0.first_item}\n"
+            "Last item:        {0.last_item}\n"
+            "First page:       {0.first_page}\n"
+            "Last page:        {0.last_page}\n"
+            "Previous page:    {0.previous_page}\n"
+            "Next page:        {0.next_page}\n"
+            "Items per page:   {0.items_per_page}\n"
+            "Number of items:  {0.item_count}\n"
+            "Number of pages:  {0.page_count}\n"
+            ).format(self)
 
     def __repr__(self):
         return("<paginate.Page:{0} of {1}>".format(self.page, self.page_count))
