@@ -18,3 +18,18 @@ This is a standalone module. Former versions were included in the WebHelpers
 Python module as webhelpers.paginate and were tightly coupled with the
 WebHelpers and the Pylons web framework. This version aims to be useful
 independent of any web framework.
+
+Subclassing Page()
+------------------
+This module supports pagination through list-like objects. To paginate though
+other types of objects you can subclass the paginate.Page() class and override
+these methods that otherwise are derived from the built-in *list* class:
+
+__iter__
+    Returns an iterable. In many cases it is just the object itself.
+    
+__len__
+    Returns the total number of elements.
+    
+__getitem__
+    Returns items for a given range. Does not need to support getting single items.
