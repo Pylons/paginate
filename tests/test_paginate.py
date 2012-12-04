@@ -6,7 +6,7 @@ import sys
 import unittest
 
 from nose.plugins.skip import SkipTest
-from nose.tools import eq_, raises
+from nose.tools import eq_, raises, assert_in
 
 import paginate
 
@@ -50,7 +50,8 @@ def test_many_pages():
     items = range(100)
     page = paginate.Page(items, page=0, items_per_page=15)
     url = "http://example.org/foo/page=$page"
-    eq_(page.collection_type, range)
+    #eq_(page.collection_type, range) <-- py3 only
+    assert_in(page.collection_type, (range,list) )
     eq_(page.page, 1)
     eq_(page.first_item, 1)
     eq_(page.last_item, 15)
