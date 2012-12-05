@@ -163,7 +163,8 @@ class Page(list):
     last_item
         Index of last item on the current page
     """
-    def __init__(self, collection, page=1, items_per_page=20, item_count=None):
+    def __init__(self, collection, page=1, items_per_page=20, item_count=None,
+                 wrapper_class=None):
         """Create a "Page" instance.
 
         Parameters:
@@ -186,7 +187,12 @@ class Page(list):
             real-life application you may want to cache the number of items.
         """
         if collection is not None:
-            self.collection = collection
+            if wrapper_class is None:
+                # Default case. The collection is already a list-type object.
+                self.collection = collection
+            else:
+                # Special case. A custom wrapper class is used to access elements of the collection.
+                self.collection = wrapper_class(collection)
         else:
             self.collection = []
 
@@ -265,21 +271,21 @@ class Page(list):
 
     def __str__(self):
         return ("Page:\n"
-            "Collection type:  {0.collection_type}\n"
-            "Current page:     {0.page}\n"
-            "First item:       {0.first_item}\n"
-            "Last item:        {0.last_item}\n"
-            "First page:       {0.first_page}\n"
-            "Last page:        {0.last_page}\n"
-            "Previous page:    {0.previous_page}\n"
-            "Next page:        {0.next_page}\n"
-            "Items per page:   {0.items_per_page}\n"
-            "Number of items:  {0.item_count}\n"
-            "Number of pages:  {0.page_count}\n"
+            "Collection type:        {0.collection_type}\n"
+            "Current page:           {0.page}\n"
+            "First item:             {0.first_item}\n"
+            "Last item:              {0.last_item}\n"
+            "First page:             {0.first_page}\n"
+            "Last page:              {0.last_page}\n"
+            "Previous page:          {0.previous_page}\n"
+            "Next page:              {0.next_page}\n"
+            "Items per page:         {0.items_per_page}\n"
+            "Total number of items:  {0.item_count}\n"
+            "Number of pages:        {0.page_count}\n"
             ).format(self)
 
     def __repr__(self):
-        return("<paginate.Page:{0} of {1}>".format(self.page, self.page_count))
+        return("<paginate.Page: Page {0}/{1}>".format(self.page, self.page_count))
 
     def pager(self, format='~2~', url=None, show_if_single_page=False, separator=' ',
         symbol_first='&lt;&lt;', symbol_last='&gt;&gt;', symbol_previous='&lt;', symbol_next='&gt;',
