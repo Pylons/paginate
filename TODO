@@ -1,3 +1,5 @@
+Prepare proper documentation and examples for GitHub/readthedocs
+
 Prepare a method that can be overriden for extension modules like paginate-sqlalchemy
 (e.g. get_wrapper)
 
