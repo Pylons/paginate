@@ -2,7 +2,7 @@ Version 0.3.2 - 2008-01-31
 --------------------------
 Public release on PyPi
 
-Version 0.4.0 - 2012-12-XXX
+Version 0.4.0 - 2012-12-06
 --------------------------
 Paginate has prior been maintained as webhelpers.paginate in the _webhelpers_ packages.
 This version is a standalone version that should be useful outside of the webhelpers'
