@@ -1,12 +1,10 @@
 What is pagination?
 ---------------------
-This module helps dividing large lists of items into pages. The user 
-is shown one page at a time and can navigate to other pages. Imagine you 
-are offering a company phonebook and let the user search the entries. If 
-the search result contains 23 entries but you may want to display no 
-more than 10 entries at once. The first page contains entries 1-10, the 
-second 11-20 and the third 21-23. See the documentation of the "Page" 
-class for more information. 
+This module helps dividing large lists of items into pages. The user is shown one page at a time and
+can navigate to other pages. Imagine you are offering a company phonebook and let the user search
+the entries. If the search result contains 23 entries but you may want to display no more than 10
+entries at once. The first page contains entries 1-10, the second 11-20 and the third 21-23. See the
+documentation of the "Page" class for more information. 
 
 How do I use this module?
 ---------------------------
@@ -14,41 +12,42 @@ The paginate module contains extensive in-line documentation with examples.
 
 Concerning WebHelpers
 -----------------------
-This is a standalone module. Former versions were included in the WebHelpers
-Python module as webhelpers.paginate and were tightly coupled with the
-WebHelpers and the Pylons web framework. This version aims to be useful
-independent of any web framework.
+This is a standalone module. Former versions were included in the WebHelpers Python module as
+webhelpers.paginate and were tightly coupled with the WebHelpers and the Pylons web framework. This
+version aims to be useful independent of any web framework.
 
 Subclassing Page()
 ------------------
-This module supports pagination through list-like objects. To paginate though
-other types of objects you can subclass the paginate.Page() class and provide
-a wrapper class that defines how to access elements of the collection.
+This module supports pagination through list-like objects. To paginate though other types of objects
+you can subclass the paginate.Page() class and provide a wrapper class that defines how to access
+elements of that special collection.
 
-You can find examples in other paginate_* modules like paginate_sqlalchemy.
-You would have to provide a class that implements the __init__, __getitem__ and
-__len__ methods. Example:
+You can find examples in other paginate_* modules like paginate_sqlalchemy. Basically you would have
+to provide a class that implements the __init__, __getitem__ and __len__ methods.
 
-class SqlalchemyOrmWrapper(object):
-    """Wrapper class to access elements of a collection."""
-    def __init__(self, obj):
-        self.obj = obj
+Example::
 
-    def __getitem__(self, range):
-        # Return a range of objects of an sqlalchemy.orm.query.Query object
-        return self.obj[range]
+    class SqlalchemyOrmWrapper(object):
+        """Wrapper class to access elements of a collection."""
+        def __init__(self, obj):
+            self.obj = obj
 
-    def __len__(self):
-        # Count the number of objects in an sqlalchemy.orm.query.Query object
-        return self.obj.count()
+        def __getitem__(self, range):
+            # Return a range of objects of an sqlalchemy.orm.query.Query object
+            return self.obj[range]
 
-Then you can create your own Page class that uses the above wrapper class:
+        def __len__(self):
+            # Count the number of objects in an sqlalchemy.orm.query.Query object
+            return self.obj.count()
 
-class SqlalchemyOrmPage(paginate.Page):
-    """A pagination page that deals with SQLAlchemy ORM objects."""
-    def __init__(self, *args, **kwargs):
-        super(SqlalchemyOrmPage, self).__init__(*args, wrapper_class=SqlalchemyOrmWrapper, **kwargs)
+Then you can create your own Page class that uses the above wrapper class::
+
+    class SqlalchemyOrmPage(paginate.Page):
+        """A pagination page that deals with SQLAlchemy ORM objects."""
+        def __init__(self, *args, **kwargs):
+            super(SqlalchemyOrmPage, self).__init__(*args, wrapper_class=SqlalchemyOrmWrapper, **kwargs)
     
-As you can see it does not do much. It just calls paginate.Page.__init__ and adds
-wrapper_class=SqlalchemyOrmWrapper as an argument. The paginate.Page instance will
-use that that wrapper class to access the elements.
+As you can see it does not do much. It basically calls paginate.Page.__init__ and adds
+wrapper_class=SqlalchemyOrmWrapper as an argument. The paginate.Page instance will use that wrapper
+class to access the elements.
+
