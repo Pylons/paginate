@@ -1,3 +1,6 @@
 dist/
 *.pyc
 *.komodoproject
+paginate.egg-info/
+build/
+
