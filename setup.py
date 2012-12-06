@@ -1,5 +1,4 @@
-try:
-    from setuptools import setup, find_packages
+from setuptools import setup, find_packages
 
 import sys, os
 
@@ -7,7 +6,6 @@ setup(
     name='paginate',
     version='0.4.0',
     description="Divides large result sets into pages for easier browsing",
-    long_description=long_description,
     long_description="""
         This module helps divide up large result sets into pages or chunks.
         The user gets displayed one page at a time and can navigate to other pages.
