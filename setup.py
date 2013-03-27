@@ -2,6 +2,10 @@ from setuptools import setup, find_packages
 
 import sys, os
 
+here = os.path.dirname(__file__)
+
+readme = open(os.path.join(here, 'README')).read()
+
 setup(
     name='paginate',
     version='0.4.0',
@@ -11,7 +15,7 @@ setup(
         The user gets displayed one page at a time and can navigate to other pages.
         It is especially useful when developing web interfaces and showing the
         users only a selection of information at a time.
-        """,
+        """ + "\n" + readme,
 
     # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
