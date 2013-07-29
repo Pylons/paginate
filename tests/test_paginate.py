@@ -6,7 +6,7 @@ import sys
 import unittest
 
 from nose.plugins.skip import SkipTest
-from nose.tools import eq_, raises, assert_in
+from nose.tools import eq_, raises, assert_in, raises
 
 import paginate
 
@@ -75,6 +75,19 @@ def test_make_html_tag():
     eq_(paginate.make_html_tag('a',href="/another/page",text="foo",onclick="$('#mydiv').focus();"), """<a href="/another/page" onclick="$('#mydiv').focus();">foo</a>""")
     eq_(paginate.make_html_tag('span',style='green'), '<span style="green">')
     eq_(paginate.make_html_tag('div', _class='red', id='maindiv'), '<div class="red" id="maindiv">')
+
+def test_url_assertion():
+    page = paginate.Page(range(100), page=0, items_per_page=10)
+    url = "http://example.org/"
+    @raises(Exception)
+    def pager():
+        page.pager(url=url)
+
+def test_url_generation():
+    def url_maker(page_number):
+        return str('x%s' % page_number)
+    page = paginate.Page(range(100), page=1, url_maker=url_maker)
+    eq_(page.pager(), '1 <a href="x2">2</a> <a href="x3">3</a> .. <a href="x5">5</a>')
 
 
 class UnsliceableSequence(object):

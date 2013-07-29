@@ -88,6 +88,12 @@ Now we can make up a collection and create a Page instance of it::
     # Without the HTML it would just look like:
     # 1 2 [3] 4 5 6 .. 50 > (Page 3 of 50)
 
+    # The url argument to the pager method can be omitted when an url_maker is
+    # given during instantiation:
+    >> my_page = Page(my_collection, page=3,
+                      url_maker=lambda p: "http://example.org/%s" % p)
+    >> page.pager()
+
 There are some interesting parameters that customize the Page's behavior. See the documentation on
 ``Page`` and ``Page.pager()``.
 
@@ -164,7 +170,7 @@ class Page(list):
         Index of last item on the current page
     """
     def __init__(self, collection, page=1, items_per_page=20, item_count=None,
-                 wrapper_class=None):
+                 wrapper_class=None, url_maker=None):
         """Create a "Page" instance.
 
         Parameters:
@@ -185,6 +191,10 @@ class Page(list):
             the number of elements in the collection every time a "Page"
             is created. Giving this parameter will speed up things. In a busy
             real-life application you may want to cache the number of items.
+
+        url_maker (optional)
+            Callback to generate the URL of other pages, given its numbers.
+            Must accept one int parameter and return a URI string.
         """
         if collection is not None:
             if wrapper_class is None:
@@ -197,6 +207,11 @@ class Page(list):
             self.collection = []
 
         self.collection_type = type(collection)
+
+        if url_maker is not None:
+            self.url_maker = url_maker
+        else:
+            self.url_maker = self._default_url_maker
 
         # The self.page is the number of the current page.
         # The first page has the number 1!
@@ -322,6 +337,8 @@ class Page(list):
         url
             The URL that page links will point to. Make sure it contains the string
             $page which will be replaced by the actual page number.
+            Must be given unless a url_maker is specified to __init__, in which
+            case this parameter is ignored.
 
         symbol_first
             String to be displayed as the text for the $link_first link above.
@@ -384,13 +401,6 @@ class Page(list):
         self.dotdot_attr = dotdot_attr
         self.url = url
         
-        if url is None:
-            raise Exception(
-                "You need to specify a 'url' parameter containing a '$page' placeholder.")
-        
-        if "$page" not in url:
-            raise Exception("The 'url' parameter must contain a '$page' placeholder.")
-
         # Don't show navigator if there is no more than one page
         if self.page_count == 0 or (self.page_count == 1 and not show_if_single_page):
             return ''
@@ -488,6 +498,16 @@ class Page(list):
 
         return self.separator.join(nav_items)
 
+    def _default_url_maker(self, page_number):
+        if self.url is None:
+            raise Exception(
+                "You need to specify a 'url' parameter containing a '$page' placeholder.")
+        
+        if "$page" not in self.url:
+            raise Exception("The 'url' parameter must contain a '$page' placeholder.")
+
+        return self.url.replace('$page', str(page_number))
+
     def _pagerlink(self, page_number, text):
         """
         Create an A-HREF tag that points to another page.
@@ -500,7 +520,7 @@ class Page(list):
         text
             Text to be printed in the A-HREF tag
         """
-        target_url = self.url.replace('$page', str(page_number))
+        target_url = self.url_maker(page_number)
         a_tag = make_html_tag('a', text=text, href=target_url, **self.link_attr)
         return a_tag
 
