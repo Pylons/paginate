@@ -170,7 +170,7 @@ class Page(list):
         Index of last item on the current page
     """
     def __init__(self, collection, page=1, items_per_page=20, item_count=None,
-                 wrapper_class=None, url_maker=None):
+                 wrapper_class=None, url_maker=None, **kwargs):
         """Create a "Page" instance.
 
         Parameters:
@@ -212,6 +212,9 @@ class Page(list):
             self.url_maker = url_maker
         else:
             self.url_maker = self._default_url_maker
+
+        # Assign kwargs to self
+        self.kwargs = kwargs
 
         # The self.page is the number of the current page.
         # The first page has the number 1!
