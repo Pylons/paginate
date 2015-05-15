@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2007-2012 Christoph Haas <email@christoph-haas.de>
 # See the file LICENSE for copying permission.
 
@@ -72,6 +74,7 @@ def test_make_html_tag():
     eq_(paginate.make_html_tag('div'), '<div>')
     eq_(paginate.make_html_tag('a',href="/another/page"), '<a href="/another/page">')
     eq_(paginate.make_html_tag('a',href="/another/page",text="foo"), '<a href="/another/page">foo</a>')
+    eq_(paginate.make_html_tag('a',href=u"/другой/страница",text="foo"), u'<a href="/другой/страница">foo</a>')
     eq_(paginate.make_html_tag('a',href="/another/page",text="foo",onclick="$('#mydiv').focus();"), """<a href="/another/page" onclick="$('#mydiv').focus();">foo</a>""")
     eq_(paginate.make_html_tag('span',style='green'), '<span style="green">')
     eq_(paginate.make_html_tag('div', _class='red', id='maindiv'), '<div class="red" id="maindiv">')
@@ -93,7 +96,7 @@ def test_url_generation():
 class UnsliceableSequence(object):
    def __init__(self, seq):
       self.l = seq
-   
+
    def __iter__(self):
        for i in self.l:
            yield i

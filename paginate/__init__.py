@@ -554,13 +554,13 @@ def make_html_tag(tag, text=None, **params):
         # to be used as a CSS class specification instead of the reserved Python keyword 'class'.
         key = key.lstrip('_')
 
-        params_string += ' {0}="{1}"'.format(key, value)
+        params_string += u' {0}="{1}"'.format(key, value)
 
     # Create the tag string
-    tag_string = '<{0}{1}>'.format(tag, params_string)
+    tag_string = u'<{0}{1}>'.format(tag, params_string)
     
     # Add text and closing tag if required.
     if text:
-        tag_string += '{0}</{1}>'.format(text, tag)
+        tag_string += u'{0}</{1}>'.format(text, tag)
 
     return tag_string
