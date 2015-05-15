@@ -110,7 +110,7 @@ __author__ = "Christoph Haas"
 __copyright__ = "Copyright 2007-2012 Christoph Haas"
 __credits__ = ["Mike Orr"]
 __license__ = "MIT"
-__version__ = "0.4.0"
+__version__ = "0.4.3"
 __maintainer__ = "Christoph Haas"
 __email__ = "email@christoph-haas.de"
 __status__ = "Beta"
@@ -126,7 +126,7 @@ class Page(list):
 
     An instance of the "Page" class is created from a _collection_ which is any
     list-like object that allows random access to its elements.
-    
+
     The instance works as an iterator running from the first item to the last item on the given
     page. The Page.pager() method creates a link list allowing the user to go to other pages.
 
@@ -135,9 +135,9 @@ class Page(list):
 
     item_count
         Number of items in the collection
-        
-        **WARNING:** Unless you pass in an item_count, a count will be 
-        performed on the collection every time a Page instance is created. 
+
+        **WARNING:** Unless you pass in an item_count, a count will be
+        performed on the collection every time a Page instance is created.
 
     page
         Number of the current page
@@ -150,7 +150,7 @@ class Page(list):
 
     last_page
         Number of the last page
-        
+
     previous_page
         Number of the previous page. If this is the first page it returns None.
 
@@ -329,7 +329,7 @@ class Page(list):
             - $link_previous: link to previous page (unless this is first page)
             - $link_next: link to next page (unless this is last page)
 
-            To render a range of pages the token '~3~' can be used. The 
+            To render a range of pages the token '~3~' can be used. The
             number sets the radius of pages around the current page.
             Example for a range with radius 3:
 
@@ -370,7 +370,7 @@ class Page(list):
 
         show_if_single_page:
             if True the navigator will be shown even if there is only one page.
-            
+
             Default: False
 
         link_attr (optional)
@@ -403,7 +403,7 @@ class Page(list):
         self.link_attr = link_attr
         self.dotdot_attr = dotdot_attr
         self.url = url
-        
+
         # Don't show navigator if there is no more than one page
         if self.page_count == 0 or (self.page_count == 1 and not show_if_single_page):
             return ''
@@ -438,13 +438,13 @@ class Page(list):
         Return range of linked pages (e.g. '1 2 [3] 4 5 6 7 8').
 
         Arguments:
-            
+
         regexp_match
             A "re" (regular expressions) match object containing the
             radius of linked pages around the current page in
             regexp_match.group(1) as a string
 
-        This function is supposed to be called as a callable in 
+        This function is supposed to be called as a callable in
         re.sub to replace occurences of ~\d+~ by a sequence of page links.
         """
         radius = int(regexp_match.group(1))
@@ -505,7 +505,7 @@ class Page(list):
         if self.url is None:
             raise Exception(
                 "You need to specify a 'url' parameter containing a '$page' placeholder.")
-        
+
         if "$page" not in self.url:
             raise Exception("The 'url' parameter must contain a '$page' placeholder.")
 
@@ -516,7 +516,7 @@ class Page(list):
         Create an A-HREF tag that points to another page.
 
         Parameters:
-            
+
         page
             Number of the page that the link points to
 
@@ -530,21 +530,21 @@ class Page(list):
 
 def make_html_tag(tag, text=None, **params):
     """Create an HTML tag string.
-    
+
     tag
         The HTML tag to use (e.g. 'a', 'span' or 'div')
-    
+
     text
         The text to enclose between opening and closing tag. If no text is specified then only
         the opening tag is returned.
-    
+
     Example::
         make_html_tag('a', text="Hello", href="/another/page")
         -> <a href="/another/page">Hello</a>
 
     To use reserved Python keywords like "class" as a parameter prepend it with
     an underscore. Instead of "class='green'" use "_class='green'".
-    
+
     Warning: Quotes and apostrophes are not escaped."""
     params_string = ''
 
@@ -558,7 +558,7 @@ def make_html_tag(tag, text=None, **params):
 
     # Create the tag string
     tag_string = u'<{0}{1}>'.format(tag, params_string)
-    
+
     # Add text and closing tag if required.
     if text:
         tag_string += u'{0}</{1}>'.format(text, tag)

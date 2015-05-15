@@ -4,7 +4,7 @@ import sys, os
 
 setup(
     name='paginate',
-    version='0.4.1',
+    version='0.4.3',
     description="Divides large result sets into pages for easier browsing",
     long_description="""
         This module helps divide up large result sets into pages or chunks.
@@ -31,4 +31,3 @@ setup(
     zip_safe=False,
     entry_points=""" """,
 )
-
