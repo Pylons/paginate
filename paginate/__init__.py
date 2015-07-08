@@ -549,7 +549,7 @@ def make_html_tag(tag, text=None, **params):
     params_string = ''
 
     # Parameters are passed. Turn the dict into a string like "a=1 b=2 c=3" string.
-    for key, value in params.items():
+    for key, value in sorted(params.items()):
         # Strip off a leading underscore from the attribute's key to allow attributes like '_class'
         # to be used as a CSS class specification instead of the reserved Python keyword 'class'.
         key = key.lstrip('_')

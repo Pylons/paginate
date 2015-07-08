@@ -67,7 +67,7 @@ def test_many_pages():
     eq_(page.pager(url=url), '1 <a href="http://example.org/foo/page=2">2</a> <a href="http://example.org/foo/page=3">3</a> .. <a href="http://example.org/foo/page=7">7</a>')
     eq_(page.pager(url=url, separator='_'), '1_<a href="http://example.org/foo/page=2">2</a>_<a href="http://example.org/foo/page=3">3</a>_.._<a href="http://example.org/foo/page=7">7</a>')
     eq_(page.pager(url=url, link_attr={'style':'linkstyle'}, curpage_attr={'style':'curpagestyle'}, dotdot_attr={'style':'dotdotstyle'}),
-        '<span style="curpagestyle">1</span> <a style="linkstyle" href="http://example.org/foo/page=2">2</a> <a style="linkstyle" href="http://example.org/foo/page=3">3</a> <span style="dotdotstyle">..</span> <a style="linkstyle" href="http://example.org/foo/page=7">7</a>')
+        '<span style="curpagestyle">1</span> <a href="http://example.org/foo/page=2" style="linkstyle">2</a> <a href="http://example.org/foo/page=3" style="linkstyle">3</a> <span style="dotdotstyle">..</span> <a href="http://example.org/foo/page=7" style="linkstyle">7</a>')
 
 def test_make_html_tag():
     """Test the make_html_tag() function"""
