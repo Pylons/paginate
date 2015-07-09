@@ -422,13 +422,13 @@ class Page(list):
             'last_item': self.last_item,
             'item_count': self.item_count,
             'link_first': self.page>self.first_page and \
-                    self._pagerlink(self.first_page, symbol_first) or '',
+                    self._pagerlink(self.first_page, symbol_first, **self.link_attr) or '',
             'link_last': self.page<self.last_page and \
-                    self._pagerlink(self.last_page, symbol_last) or '',
+                    self._pagerlink(self.last_page, symbol_last, **self.link_attr) or '',
             'link_previous': self.previous_page and \
-                    self._pagerlink(self.previous_page, symbol_previous) or '',
+                    self._pagerlink(self.previous_page, symbol_previous, **self.link_attr) or '',
             'link_next': self.next_page and \
-                    self._pagerlink(self.next_page, symbol_next) or ''
+                    self._pagerlink(self.next_page, symbol_next, **self.link_attr) or ''
         })
 
         return result
@@ -450,7 +450,7 @@ class Page(list):
             "range_pages": []
         }
 
-        nav_items["first_page"] = {"type": "first_page", "value": self.first_page, "attrs": {},
+        nav_items["first_page"] = {"type": "first_page", "value": self.first_page, "attrs": self.link_attr,
                                    "href":  self.url_maker(str(self.first_page))}
 
         # Insert dots if there are pages between the first page
@@ -470,7 +470,7 @@ class Page(list):
             # Otherwise create just a link to that page
             else:
                 nav_items["range_pages"].append({"type": "page", "value": str(thispage),
-                                                 "attrs": {}, "href": self.url_maker(str(thispage))})
+                                                 "attrs": self.link_attr, "href": self.url_maker(str(thispage))})
 
         # Insert dots if there are pages between the displayed
         # page numbers and the end of the page range
@@ -480,13 +480,15 @@ class Page(list):
 
         # Create a link to the very last page (unless we are on the last
         # page or there would be no need to insert '..' spacers)
-        nav_items["last_page"] = {"type": "last_page", "value": self.last_page, "attrs": {},
+        nav_items["last_page"] = {"type": "last_page", "value": self.last_page, "attrs": self.link_attr,
                                   "href": self.url_maker(str(self.last_page))}
 
-        nav_items["previous_page"] = {"type": "previous_page", "value": self.previous_page or self.first_page, "attrs": {},
+        nav_items["previous_page"] = {"type": "previous_page", "value": self.previous_page or self.first_page,
+                                      "attrs": self.link_attr,
                                       "href": self.url_maker(str(self.previous_page or self.first_page))}
 
-        nav_items["next_page"] = {"type": "next_page", "value": self.next_page or self.last_page, "attrs": {},
+        nav_items["next_page"] = {"type": "next_page", "value": self.next_page or self.last_page,
+                                  "attrs": self.link_attr,
                                   "href": self.url_maker(str(self.next_page or self.last_page,))}
 
         return nav_items
@@ -645,16 +647,14 @@ class Page(list):
         if self.page != self.first_page and self.first_page < leftmost_page:
             page = link_map['first_page']
             text = str(page['value'])
-            if link_map['first_page']['attrs']:
-                text = make_html_tag('span', **page['attrs']) + text + '</span>'
-            nav_items.append(self._pagerlink(text, text))
+            nav_items.append(self._pagerlink(text, text, **page['attrs']))
 
         for item in link_map['range_pages']:
             text = str(item['value'])
-            if item['attrs']:
+            if item['attrs'] and item['type'] in ('span', 'current_page'):
                 text = make_html_tag('span', **item['attrs']) + text + '</span>'
             if item['type'] == 'page':
-                nav_items.append(self._pagerlink(text, text))
+                nav_items.append(self._pagerlink(text, text, **item['attrs']))
             else:
                 nav_items.append(text)
 
@@ -663,9 +663,7 @@ class Page(list):
         if self.page != self.last_page and rightmost_page < self.last_page:
             page = link_map['last_page']
             text = str(page['value'])
-            if page['attrs']:
-                text = make_html_tag('span', **page['attrs']) + text + '</span>'
-            nav_items.append(self._pagerlink(text, text))
+            nav_items.append(self._pagerlink(text, text, **page['attrs']))
 
         return self.separator.join(nav_items)
 
@@ -679,7 +677,7 @@ class Page(list):
 
         return self.url.replace('$page', str(page_number))
 
-    def _pagerlink(self, page_number, text):
+    def _pagerlink(self, page_number, text, **link_attr):
         """
         Create an A-HREF tag that points to another page.
 
@@ -692,7 +690,7 @@ class Page(list):
             Text to be printed in the A-HREF tag
         """
         target_url = self.url_maker(page_number)
-        a_tag = make_html_tag('a', text=text, href=target_url, **self.link_attr)
+        a_tag = make_html_tag('a', text=text, href=target_url, **link_attr)
         return a_tag
 
 
