@@ -411,10 +411,15 @@ class Page(list):
 
         radius = re.search(r'~(\d+)~', format).group(1)
         radius = int(radius)
-        link_map = self._gen_link_map(radius)
+        link_map = self.link_map(
+            format=format, url=url, show_if_single_page=show_if_single_page, separator=separator,
+            symbol_first=symbol_first, symbol_last=symbol_last, symbol_previous=symbol_previous,
+            symbol_next=symbol_next, link_attr=link_attr, curpage_attr=curpage_attr, dotdot_attr=dotdot_attr
+        )
+        links_markup = self._range(link_map, radius)
 
         # Replace ~...~ in token format by range of pages
-        result = re.sub(r'~(\d+)~', self._range, format)
+        result = re.sub(r'~(\d+)~', links_markup, format)
 
         # Interpolate '$' variables
         result = Template(result).safe_substitute({
@@ -427,82 +432,24 @@ class Page(list):
             'last_item': self.last_item,
             'item_count': self.item_count,
             'link_first': self.page>self.first_page and \
-                    self.pagerlink(self.first_page, symbol_first, **self.link_attr) or '',
+                    self.pagerlink(link_map['first_page']['number'], link_map['first_page']['value'],
+                                   **link_map['first_page']['attrs']) or '',
             'link_last': self.page<self.last_page and \
-                    self.pagerlink(self.last_page, symbol_last, **self.link_attr) or '',
+                    self.pagerlink(link_map['last_page']['number'], link_map['last_page']['value'],
+                                   **link_map['last_page']['attrs']) or '',
             'link_previous': self.previous_page and \
-                    self.pagerlink(self.previous_page, symbol_previous, **self.link_attr) or '',
+                    self.pagerlink(link_map['previous_page']['number'], link_map['previous_page']['value'],
+                                   **link_map['previous_page']['attrs']) or '',
             'link_next': self.next_page and \
-                    self.pagerlink(self.next_page, symbol_next, **self.link_attr) or ''
+                    self.pagerlink(link_map['next_page']['number'], link_map['next_page']['value'],
+                                   **link_map['next_page']['attrs']) or ''
         })
 
         return result
 
-    def _gen_link_map(self, radius):
-        # Compute the first and last page number within the radius
-        # e.g. '1 .. 5 6 [7] 8 9 .. 12'
-        # -> leftmost_page  = 5
-        # -> rightmost_page = 9
-        leftmost_page = max(self.first_page, (self.page-radius))
-        rightmost_page = min(self.last_page, (self.page+radius))
-
-        nav_items = {
-            "first_page": None,
-            "last_page": None,
-            "previous_page": None,
-            "next_page": None,
-            "current_page": None,
-            "range_pages": []
-        }
-
-        nav_items["first_page"] = {"type": "first_page", "value": str(self.first_page), "attrs": self.link_attr,
-                                   "number": self.first_page, "href": self.url_maker(self.first_page)}
-
-        # Insert dots if there are pages between the first page
-        # and the currently displayed page range
-        if leftmost_page - self.first_page > 1:
-            # Wrap in a SPAN tag if dotdot_attr is set
-            nav_items["range_pages"].append({"type": "span", "value": '..', "attrs": self.dotdot_attr, "href": "",
-                                             "number": None})
-
-        for thispage in range(leftmost_page, rightmost_page+1):
-            # Highlight the current page number and do not use a link
-            if thispage == self.page:
-                # Wrap in a SPAN tag if curpage_attr is set
-                nav_items["range_pages"].append({"type": "current_page", "value": str(thispage), "number": thispage,
-                                                 "attrs": self.curpage_attr, "href": self.url_maker(thispage)})
-                nav_items["current_page"] = {"value": thispage, "attrs": self.curpage_attr,
-                                             "href": self.url_maker(thispage)}
-            # Otherwise create just a link to that page
-            else:
-                nav_items["range_pages"].append({"type": "page", "value": str(thispage), "number": thispage,
-                                                 "attrs": self.link_attr, "href": self.url_maker(thispage)})
-
-        # Insert dots if there are pages between the displayed
-        # page numbers and the end of the page range
-        if self.last_page - rightmost_page > 1:
-            # Wrap in a SPAN tag if dotdot_attr is set
-            nav_items["range_pages"].append({"type": "span", "value": '..', "attrs": self.dotdot_attr, "href": "",
-                                             "number":None})
-
-        # Create a link to the very last page (unless we are on the last
-        # page or there would be no need to insert '..' spacers)
-        nav_items["last_page"] = {"type": "last_page", "value": str(self.last_page), "attrs": self.link_attr,
-                                  "href": self.url_maker(self.last_page), "number":self.last_page}
-
-        nav_items["previous_page"] = {"type": "previous_page", "value": str(self.previous_page or self.first_page),
-                                      "attrs": self.link_attr, "number": self.previous_page or self.first_page,
-                                      "href": self.url_maker(self.previous_page or self.first_page)}
-
-        nav_items["next_page"] = {"type": "next_page", "value": str(self.next_page or self.last_page),
-                                  "attrs": self.link_attr, "number": self.next_page or self.last_page,
-                                  "href": self.url_maker(self.next_page or self.last_page)}
-
-        return nav_items
-
     def link_map(self, format='~2~', url=None, show_if_single_page=False, separator=' ',
               symbol_first='&lt;&lt;', symbol_last='&gt;&gt;', symbol_previous='&lt;', symbol_next='&gt;',
-              link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict(), pagerlink=None):
+              link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict()):
         """ Return map with links to other pages if default pager() function is not suitable solution.
         format:
             Format string that defines how the pager would be normally rendered rendered. Uses same arguments as pager()
@@ -619,25 +566,6 @@ class Page(list):
 
         radius = re.search(r'~(\d+)~', format).group(1)
         radius = int(radius)
-        return self._gen_link_map(radius)
-
-
-    def _range(self, regexp_match):
-        """
-        Return range of linked pages (e.g. '1 2 [3] 4 5 6 7 8').
-
-        Arguments:
-
-        regexp_match
-            A "re" (regular expressions) match object containing the
-            radius of linked pages around the current page in
-            regexp_match.group(1) as a string
-
-        This function is supposed to be called as a callable in
-        re.sub to replace occurences of ~\d+~ by a sequence of page links.
-        """
-        radius = int(regexp_match.group(1))
-        link_map = self._gen_link_map(radius)
 
         # Compute the first and last page number within the radius
         # e.g. '1 .. 5 6 [7] 8 9 .. 12'
@@ -646,13 +574,76 @@ class Page(list):
         leftmost_page = max(self.first_page, (self.page-radius))
         rightmost_page = min(self.last_page, (self.page+radius))
 
-        nav_items = []
+        nav_items = {
+            "first_page": None,
+            "last_page": None,
+            "previous_page": None,
+            "next_page": None,
+            "current_page": None,
+            "range_pages": []
+        }
 
+        nav_items["first_page"] = {"type": "first_page", "value": str(symbol_first), "attrs": self.link_attr,
+                                   "number": self.first_page, "href": self.url_maker(self.first_page)}
+
+        # Insert dots if there are pages between the first page
+        # and the currently displayed page range
+        if leftmost_page - self.first_page > 1:
+            # Wrap in a SPAN tag if dotdot_attr is set
+            nav_items["range_pages"].append({"type": "span", "value": '..', "attrs": self.dotdot_attr, "href": "",
+                                             "number": None})
+
+        for thispage in range(leftmost_page, rightmost_page+1):
+            # Highlight the current page number and do not use a link
+            if thispage == self.page:
+                # Wrap in a SPAN tag if curpage_attr is set
+                nav_items["range_pages"].append({"type": "current_page", "value": str(thispage), "number": thispage,
+                                                 "attrs": self.curpage_attr, "href": self.url_maker(thispage)})
+                nav_items["current_page"] = {"value": thispage, "attrs": self.curpage_attr,
+                                             "href": self.url_maker(thispage)}
+            # Otherwise create just a link to that page
+            else:
+                nav_items["range_pages"].append({"type": "page", "value": str(thispage), "number": thispage,
+                                                 "attrs": self.link_attr, "href": self.url_maker(thispage)})
+
+        # Insert dots if there are pages between the displayed
+        # page numbers and the end of the page range
+        if self.last_page - rightmost_page > 1:
+            # Wrap in a SPAN tag if dotdot_attr is set
+            nav_items["range_pages"].append({"type": "span", "value": '..', "attrs": self.dotdot_attr, "href": "",
+                                             "number":None})
+
+        # Create a link to the very last page (unless we are on the last
+        # page or there would be no need to insert '..' spacers)
+        nav_items["last_page"] = {"type": "last_page", "value": str(symbol_last), "attrs": self.link_attr,
+                                  "href": self.url_maker(self.last_page), "number":self.last_page}
+
+        nav_items["previous_page"] = {"type": "previous_page", "value": str(symbol_previous),
+                                      "attrs": self.link_attr, "number": self.previous_page or self.first_page,
+                                      "href": self.url_maker(self.previous_page or self.first_page)}
+
+        nav_items["next_page"] = {"type": "next_page", "value": str(symbol_next),
+                                  "attrs": self.link_attr, "number": self.next_page or self.last_page,
+                                  "href": self.url_maker(self.next_page or self.last_page)}
+
+        return nav_items
+
+
+    def _range(self, link_map, radius):
+        """
+        Return range of linked pages to substiture placeholder in pattern
+        """
+
+
+        leftmost_page = max(self.first_page, (self.page-radius))
+        rightmost_page = min(self.last_page, (self.page+radius))
+
+        nav_items = []
         # Create a link to the first page (unless we are on the first page
         # or there would be no need to insert '..' spacers)
         if self.page != self.first_page and self.first_page < leftmost_page:
             page = link_map['first_page']
-            nav_items.append(self.pagerlink(page['number'], page['value'], **page['attrs']))
+            nav_items.append(self.pagerlink(page['number'], page['number'], **page['attrs']))
 
         for item in link_map['range_pages']:
             text = str(item['value'])
@@ -667,7 +658,7 @@ class Page(list):
         # page or there would be no need to insert '..' spacers)
         if self.page != self.last_page and rightmost_page < self.last_page:
             page = link_map['last_page']
-            nav_items.append(self.pagerlink(page['number'], page['value'], **page['attrs']))
+            nav_items.append(self.pagerlink(page['number'], page['number'], **page['attrs']))
 
         return self.separator.join(nav_items)
 
