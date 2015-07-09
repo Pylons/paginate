@@ -469,7 +469,7 @@ class Page(list):
                 # Wrap in a SPAN tag if curpage_attr is set
                 nav_items["range_pages"].append({"type": "current_page", "value": thispage,
                                                  "attrs": self.curpage_attr, "href": self.url_maker(str(thispage))})
-                nav_items["current_page"] = {"value": thispage, "attrs": {},
+                nav_items["current_page"] = {"value": thispage, "attrs": self.curpage_attr,
                                              "href": self.url_maker(str(thispage))}
             # Otherwise create just a link to that page
             else:
