@@ -101,3 +101,33 @@ Returns something like::
       {'attrs': {'class': 'D'}, 'href': '', 'type': 'span', 'value': '..'}]}
 
 
+Using link_tag callable to generate custom link markup
+------------------------------------------------------
+
+In case you want to generate custom link markup for your project - for example for use with bootstrap,
+`pager()` accepts `link_tag` argument that expects a callable that can be used to easly override the way links are
+generated.
+
+
+Example::
+
+    from paginate import Page, make_html_tag
+
+    def paginate_link_tag(item):
+        """
+        Create an A-HREF tag that points to another page usable in paginate.
+        """
+        a_tag = Page.default_link_tag(item)
+        if item['type'] == 'current_page':
+            return make_html_tag('li', a_tag, **{'class':'active'})
+        return make_html_tag('li', a_tag)
+
+    paginator.pager(
+    curpage_attr={'class':'current_page'},
+    dotdot_attr={'class':'spacer'},
+    symbol_first='<i class="fa fa-chevron-circle-left"></i>',
+    symbol_last='<i class="fa fa-chevron-circle-right"></i>',
+    symbol_previous='<i class="fa fa-chevron-left"></i>',
+    symbol_next='<i class="fa fa-chevron-right"></i>',
+    link_tag=paginate_link_tag)
+
