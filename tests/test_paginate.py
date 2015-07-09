@@ -70,7 +70,7 @@ def test_many_pages():
     eq_(page.pager(url=url, link_attr={'style':'linkstyle'}, curpage_attr={'style':'curpagestyle'}, dotdot_attr={'style':'dotdotstyle'}),
         '<span style="curpagestyle">1</span> <a href="http://example.org/foo/page=2" style="linkstyle">2</a> <a href="http://example.org/foo/page=3" style="linkstyle">3</a> <span style="dotdotstyle">..</span> <a href="http://example.org/foo/page=7" style="linkstyle">7</a>')
 
-def test_links_page():
+def test_link_map():
     """Test that fits 10 items on a single 10-item page."""
     items = range(109)
     page = paginate.Page(items, page=0, items_per_page=15)
