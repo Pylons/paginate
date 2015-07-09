@@ -78,6 +78,7 @@ def test_link_map():
     format = '$link_first $link_previous ~4~ $link_next $link_last (Page $page our of $page_count - total items $item_count)'
     result = page.link_map(format, url=url)
     fpage_result = {'current_page': {'attrs': {},
+                                     'type': 'current_page',
                                      'href': 'http://example.org/foo/page=1',
                                      'value': 1},
                     'first_page': {'attrs': {},
@@ -134,6 +135,7 @@ def test_link_map():
     page = paginate.Page(items, page=100, items_per_page=15)
     result = page.link_map(format, url=url)
     l_page_result = {'current_page': {'attrs': {},
+                                      'type': 'current_page',
                                       'href': 'http://example.org/foo/page=8',
                                       'value': 8},
                      'first_page': {'attrs': {},

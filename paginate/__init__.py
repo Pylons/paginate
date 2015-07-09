@@ -307,7 +307,7 @@ class Page(list):
 
     def pager(self, format='~2~', url=None, show_if_single_page=False, separator=' ',
         symbol_first='&lt;&lt;', symbol_last='&gt;&gt;', symbol_previous='&lt;', symbol_next='&gt;',
-        link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict(), pagerlink=None):
+        link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict(), link_tag=None):
         """
         Return string with links to other pages (e.g. '1 .. 5 6 7 [8] 9 10 11 .. 50').
 
@@ -396,14 +396,19 @@ class Page(list):
             Example: { 'style':'color: #808080' }
             Example: { 'class':'pager_dotdot' }
 
-        Additional keyword arguments are used as arguments in the links.
+        link_tag (optional)
+            A callable that accepts single argument `page` (page link information)
+            and generates string with html that represents the link for specific page.
+            Page objects are supplied from `link_map()` so the keys are the same.
+
+
         """
         self.curpage_attr = curpage_attr
         self.separator = separator
         self.link_attr = link_attr
         self.dotdot_attr = dotdot_attr
         self.url = url
-        self.pagerlink = pagerlink or self._pagerlink
+        self.link_tag = link_tag or self.default_link_tag
 
         # Don't show navigator if there is no more than one page
         if self.page_count == 0 or (self.page_count == 1 and not show_if_single_page):
@@ -431,18 +436,10 @@ class Page(list):
             'first_item': self.first_item,
             'last_item': self.last_item,
             'item_count': self.item_count,
-            'link_first': self.page>self.first_page and \
-                    self.pagerlink(link_map['first_page']['number'], link_map['first_page']['value'],
-                                   **link_map['first_page']['attrs']) or '',
-            'link_last': self.page<self.last_page and \
-                    self.pagerlink(link_map['last_page']['number'], link_map['last_page']['value'],
-                                   **link_map['last_page']['attrs']) or '',
-            'link_previous': self.previous_page and \
-                    self.pagerlink(link_map['previous_page']['number'], link_map['previous_page']['value'],
-                                   **link_map['previous_page']['attrs']) or '',
-            'link_next': self.next_page and \
-                    self.pagerlink(link_map['next_page']['number'], link_map['next_page']['value'],
-                                   **link_map['next_page']['attrs']) or ''
+            'link_first': self.page>self.first_page and self.link_tag(link_map['first_page']) or '',
+            'link_last': self.page<self.last_page and self.link_tag(link_map['last_page']) or '',
+            'link_previous': self.previous_page and self.link_tag(link_map['previous_page']) or '',
+            'link_next': self.next_page and self.link_tag(link_map['next_page']) or ''
         })
 
         return result
@@ -600,7 +597,7 @@ class Page(list):
                 nav_items["range_pages"].append({"type": "current_page", "value": str(thispage), "number": thispage,
                                                  "attrs": self.curpage_attr, "href": self.url_maker(thispage)})
                 nav_items["current_page"] = {"value": thispage, "attrs": self.curpage_attr,
-                                             "href": self.url_maker(thispage)}
+                                             "type": "current_page", "href": self.url_maker(thispage)}
             # Otherwise create just a link to that page
             else:
                 nav_items["range_pages"].append({"type": "page", "value": str(thispage), "number": thispage,
@@ -642,23 +639,19 @@ class Page(list):
         # Create a link to the first page (unless we are on the first page
         # or there would be no need to insert '..' spacers)
         if self.page != self.first_page and self.first_page < leftmost_page:
-            page = link_map['first_page']
-            nav_items.append(self.pagerlink(page['number'], page['number'], **page['attrs']))
+            page = link_map['first_page'].copy()
+            page['value'] = str(page['number'])
+            nav_items.append(self.link_tag(page))
 
         for item in link_map['range_pages']:
-            text = str(item['value'])
-            if item['attrs'] and item['type'] in ('span', 'current_page'):
-                text = make_html_tag('span', **item['attrs']) + text + '</span>'
-            if item['type'] == 'page':
-                nav_items.append(self.pagerlink(item['number'], text, **item['attrs']))
-            else:
-                nav_items.append(text)
+            nav_items.append(self.link_tag(item))
 
         # Create a link to the very last page (unless we are on the last
         # page or there would be no need to insert '..' spacers)
         if self.page != self.last_page and rightmost_page < self.last_page:
-            page = link_map['last_page']
-            nav_items.append(self.pagerlink(page['number'], page['number'], **page['attrs']))
+            page = link_map['last_page'].copy()
+            page['value'] = str(page['number'])
+            nav_items.append(self.link_tag(page))
 
         return self.separator.join(nav_items)
 
@@ -672,21 +665,20 @@ class Page(list):
 
         return self.url.replace('$page', str(page_number))
 
-    def _pagerlink(self, page_number, text, **attrs):
+    @staticmethod
+    def default_link_tag(item):
         """
         Create an A-HREF tag that points to another page.
-
-        Parameters:
-
-        page
-            Number of the page that the link points to
-
-        text
-            Text to be printed in the A-HREF tag
         """
-        target_url = self.url_maker(page_number)
-        a_tag = make_html_tag('a', text=text, href=target_url, **attrs)
-        return a_tag
+        text = item['value']
+        target_url = item['href']
+
+        if not item['href'] or item['type'] in ('span', 'current_page'):
+            if item['attrs']:
+                text = make_html_tag('span', **item['attrs']) + text + '</span>'
+            return text
+
+        return make_html_tag('a', text=text, href=target_url, **item['attrs'])
 
 
 def make_html_tag(tag, text=None, **params):
