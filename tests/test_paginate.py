@@ -10,6 +10,7 @@ import unittest
 from nose.plugins.skip import SkipTest
 from nose.tools import eq_, raises, assert_in, raises
 
+import pprint
 import paginate
 
 def test_empty_list():
@@ -68,6 +69,97 @@ def test_many_pages():
     eq_(page.pager(url=url, separator='_'), '1_<a href="http://example.org/foo/page=2">2</a>_<a href="http://example.org/foo/page=3">3</a>_.._<a href="http://example.org/foo/page=7">7</a>')
     eq_(page.pager(url=url, link_attr={'style':'linkstyle'}, curpage_attr={'style':'curpagestyle'}, dotdot_attr={'style':'dotdotstyle'}),
         '<span style="curpagestyle">1</span> <a href="http://example.org/foo/page=2" style="linkstyle">2</a> <a href="http://example.org/foo/page=3" style="linkstyle">3</a> <span style="dotdotstyle">..</span> <a href="http://example.org/foo/page=7" style="linkstyle">7</a>')
+
+def test_links_page():
+    """Test that fits 10 items on a single 10-item page."""
+    items = range(109)
+    page = paginate.Page(items, page=0, items_per_page=15)
+    url = "http://example.org/foo/page=$page"
+    format = '$link_first $link_previous ~4~ $link_next $link_last (Page $page our of $page_count - total items $item_count)'
+    result = page.link_map(format, url=url)
+    fpage_result = {'current_page': {'attrs': {},
+                                     'href': 'http://example.org/foo/page=1',
+                                     'value': 1},
+                    'first_page': {'attrs': {},
+                                   'href': 'http://example.org/foo/page=1',
+                                   'type': 'first_page',
+                                   'value': 1},
+                    'last_page': {'attrs': {},
+                                  'href': 'http://example.org/foo/page=8',
+                                  'type': 'last_page',
+                                  'value': 8},
+                    'next_page': {'attrs': {},
+                                  'href': 'http://example.org/foo/page=2',
+                                  'type': 'next_page',
+                                  'value': 2},
+                    'previous_page': None,
+                    'range_pages': [{'attrs': {},
+                                     'href': 'http://example.org/foo/page=1',
+                                     'type': 'current_page',
+                                     'value': 1},
+                                    {'attrs': {},
+                                     'href': 'http://example.org/foo/page=2',
+                                     'type': 'page',
+                                     'value': '2'},
+                                    {'attrs': {},
+                                     'href': 'http://example.org/foo/page=3',
+                                     'type': 'page',
+                                     'value': '3'},
+                                    {'attrs': {},
+                                     'href': 'http://example.org/foo/page=4',
+                                     'type': 'page',
+                                     'value': '4'},
+                                    {'attrs': {},
+                                     'href': 'http://example.org/foo/page=5',
+                                     'type': 'page',
+                                     'value': '5'},
+                                    {'attrs': {}, 'href': '', 'type': 'span', 'value': '..'}]}
+    eq_(result, fpage_result)
+
+    page = paginate.Page(items, page=100, items_per_page=15)
+    result = page.link_map(format, url=url)
+    l_page_result = {'current_page': {'attrs': {},
+                                      'href': 'http://example.org/foo/page=8',
+                                      'value': 8},
+                     'first_page': {'attrs': {},
+                                    'href': 'http://example.org/foo/page=1',
+                                    'type': 'first_page',
+                                    'value': 1},
+                     'last_page': {'attrs': {},
+                                   'href': 'http://example.org/foo/page=8',
+                                   'type': 'last_page',
+                                   'value': 8},
+                     'next_page': None,
+                     'previous_page': {'attrs': {},
+                                       'href': 'http://example.org/foo/page=7',
+                                       'type': 'previous_page',
+                                       'value': 7},
+                     'range_pages': [{'attrs': {},
+                                      'href': 'http://example.org/foo/page=1',
+                                      'type': 'first_page',
+                                      'value': 1},
+                                     {'attrs': {}, 'href': '', 'type': 'span', 'value': '..'},
+                                     {'attrs': {},
+                                      'href': 'http://example.org/foo/page=4',
+                                      'type': 'page',
+                                      'value': '4'},
+                                     {'attrs': {},
+                                      'href': 'http://example.org/foo/page=5',
+                                      'type': 'page',
+                                      'value': '5'},
+                                     {'attrs': {},
+                                      'href': 'http://example.org/foo/page=6',
+                                      'type': 'page',
+                                      'value': '6'},
+                                     {'attrs': {},
+                                      'href': 'http://example.org/foo/page=7',
+                                      'type': 'page',
+                                      'value': '7'},
+                                     {'attrs': {},
+                                      'href': 'http://example.org/foo/page=8',
+                                      'type': 'current_page',
+                                      'value': 8}]}
+    eq_(result, l_page_result)
 
 def test_make_html_tag():
     """Test the make_html_tag() function"""
