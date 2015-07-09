@@ -483,13 +483,11 @@ class Page(list):
         nav_items["last_page"] = {"type": "last_page", "value": self.last_page, "attrs": {},
                                   "href": self.url_maker(str(self.last_page))}
 
-        if self.previous_page:
-            nav_items["previous_page"] = {"type": "previous_page", "value": self.previous_page, "attrs": {},
-                                          "href": self.url_maker(str(self.previous_page))}
+        nav_items["previous_page"] = {"type": "previous_page", "value": self.previous_page or self.first_page, "attrs": {},
+                                      "href": self.url_maker(str(self.previous_page or self.first_page))}
 
-        if self.next_page:
-            nav_items["next_page"] = {"type": "next_page", "value": self.next_page, "attrs": {},
-                                      "href": self.url_maker(str(self.next_page))}
+        nav_items["next_page"] = {"type": "next_page", "value": self.next_page or self.last_page, "attrs": {},
+                                  "href": self.url_maker(str(self.next_page or self.last_page,))}
 
         return nav_items
 
@@ -498,8 +496,30 @@ class Page(list):
               link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict()):
         """ Return map with links to other pages if default pager() function is not suitable solution.
         format:
-            Format string that defines how the pager is rendered. The string
-            can contain the following $-tokens that are substituted by the
+            Format string that defines how the pager would be normally rendered rendered. Uses same arguments as pager()
+            method, but returns a simple dictionary in form of:
+            {'current_page': {'attrs': {},
+                                     'href': 'http://example.org/foo/page=1',
+                                     'value': 1},
+                    'first_page': {'attrs': {},
+                                   'href': 'http://example.org/foo/page=1',
+                                   'type': 'first_page',
+                                   'value': 1},
+                    'last_page': {'attrs': {},
+                                  'href': 'http://example.org/foo/page=8',
+                                  'type': 'last_page',
+                                  'value': 8},
+                    'next_page': {'attrs': {}, 'href': 'HREF', 'type': 'next_page', 'value': 2},
+                    'previous_page': None,
+                    'range_pages': [{'attrs': {},
+                                     'href': 'http://example.org/foo/page=1',
+                                     'type': 'current_page',
+                                     'value': 1},
+                                     ....
+                                    {'attrs': {}, 'href': '', 'type': 'span', 'value': '..'}]}
+
+
+            The string can contain the following $-tokens that are substituted by the
             string.Template module:
 
             - $first_page: number of first reachable page

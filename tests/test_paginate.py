@@ -92,7 +92,10 @@ def test_links_page():
                                   'href': 'http://example.org/foo/page=2',
                                   'type': 'next_page',
                                   'value': 2},
-                    'previous_page': None,
+                    'previous_page': {'attrs': {},
+                                      'href': 'http://example.org/foo/page=1',
+                                      'type': 'previous_page',
+                                      'value': 1},
                     'range_pages': [{'attrs': {},
                                      'href': 'http://example.org/foo/page=1',
                                      'type': 'current_page',
@@ -115,7 +118,6 @@ def test_links_page():
                                      'value': '5'},
                                     {'attrs': {}, 'href': '', 'type': 'span', 'value': '..'}]}
     eq_(result, fpage_result)
-
     page = paginate.Page(items, page=100, items_per_page=15)
     result = page.link_map(format, url=url)
     l_page_result = {'current_page': {'attrs': {},
@@ -129,16 +131,15 @@ def test_links_page():
                                    'href': 'http://example.org/foo/page=8',
                                    'type': 'last_page',
                                    'value': 8},
-                     'next_page': None,
+                     'next_page': {'attrs': {},
+                                   'href': 'http://example.org/foo/page=8',
+                                   'type': 'next_page',
+                                   'value': 8},
                      'previous_page': {'attrs': {},
                                        'href': 'http://example.org/foo/page=7',
                                        'type': 'previous_page',
                                        'value': 7},
-                     'range_pages': [{'attrs': {},
-                                      'href': 'http://example.org/foo/page=1',
-                                      'type': 'first_page',
-                                      'value': 1},
-                                     {'attrs': {}, 'href': '', 'type': 'span', 'value': '..'},
+                     'range_pages': [{'attrs': {}, 'href': '', 'type': 'span', 'value': '..'},
                                      {'attrs': {},
                                       'href': 'http://example.org/foo/page=4',
                                       'type': 'page',
