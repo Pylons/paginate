@@ -25,6 +25,8 @@ elements of that special collection.
 You can find examples in other paginate_* modules like paginate_sqlalchemy. Basically you would have
 to provide a class that implements the __init__, __getitem__ and __len__ methods.
 
+It is trivial to make pagination for other datastores like Elasticsearch/Solr extending the base class.
+
 Example::
 
     class SqlalchemyOrmWrapper(object):
@@ -50,4 +52,52 @@ Then you can create your own Page class that uses the above wrapper class::
 As you can see it does not do much. It basically calls paginate.Page.__init__ and adds
 wrapper_class=SqlalchemyOrmWrapper as an argument. The paginate.Page instance will use that wrapper
 class to access the elements.
+
+
+Generating HTML come for current page
+-------------------------------------
+
+Example::
+
+    p = paginate.Page([], page=15, items_per_page=15, item_count=1010)
+    # item_count is optional, but we pass a dummy empty resultset for this example
+    pattern = '$link_first $link_previous ~4~ $link_next $link_last (Page $page our of $page_count - total $item_count)'
+    p.pager(pattern, url='http://foo.com?x=$page', dotdot_attr={'x':5}, link_attr={'y':6}, curpage_attr={'z':77})
+    # *_attr arguments are optional and can be used to attach additional classes/attrs to tags
+
+
+Results in::
+
+    '<a class="L" href="URL?x=1">&lt;&lt;</a> <a class="L" href="URL?x=14">&lt;</a> <a class="L" href="URL?x=1">1</a> <span class="D">..</span> <a class="L" href="URL?x=11">11</a> <a class="L" href="URL?x=12">12</a> <a class="L" href="URL?x=13">13</a> <a class="L" href="URL?x=14">14</a> <span class="C">15</span> <a class="L" href="URL?x=16">16</a> <a class="L" href="URL?x=17">17</a> <a class="L" href="URL?x=18">18</a> <a class="L" href="URL?x=19">19</a> <span class="D">..</span> <a class="L" href="URL?x=68">68</a> <a class="L" href="URL?x=16">&gt;</a> <a class="L" href="URL?x=68">&gt;&gt;</a> (Page 15 our of 68 - total items 1010)'
+
+
+Using link information for custom paginator templates
+-----------------------------------------------------
+
+If you do not like the default HTML format produced by paginator you can use link_map() function to generate
+a dictionary of links you can use in your own template.
+
+Example::
+
+    p.link_map('$link_first $link_previous ~4~ $link_next $link_last (Page $page our of $page_count - total items $item_count)',url='URL?x=$page',dotdot_attr={'class':'D'}, link_attr={'class':"L"}, curpage_attr={'class':"C"})
+
+Returns something like::
+
+    {'current_page': {'attrs': {'class': 'C'}, 'href': 'URL?x=15', 'value': 15},
+     'first_page': {'attrs': {'class': 'L'}, 'href': 'URL?x=1', 'type': 'first_page', 'value': 1},
+     'last_page': {'attrs': {'class': 'L'}, 'href': 'URL?x=68', 'type': 'last_page', 'value': 68},
+     'next_page': {'attrs': {'class': 'L'}, 'href': 'URL?x=16', 'type': 'next_page', 'value': 16},
+     'previous_page': {'attrs': {'class': 'L'}, 'href': 'URL?x=14', 'type': 'previous_page', 'value': 14},
+     'range_pages': [{'attrs': {'class': 'D'}, 'href': '', 'type': 'span', 'value': '..'},
+      {'attrs': {'class': 'L'}, 'href': 'URL?x=11', 'type': 'page', 'value': '11'},
+      {'attrs': {'class': 'L'}, 'href': 'URL?x=12', 'type': 'page', 'value': '12'},
+      {'attrs': {'class': 'L'}, 'href': 'URL?x=13', 'type': 'page', 'value': '13'},
+      {'attrs': {'class': 'L'}, 'href': 'URL?x=14', 'type': 'page', 'value': '14'},
+      {'attrs': {'class': 'C'}, 'href': 'URL?x=15', 'type': 'current_page', 'value': 15},
+      {'attrs': {'class': 'L'}, 'href': 'URL?x=16', 'type': 'page', 'value': '16'},
+      {'attrs': {'class': 'L'}, 'href': 'URL?x=17', 'type': 'page', 'value': '17'},
+      {'attrs': {'class': 'L'}, 'href': 'URL?x=18', 'type': 'page', 'value': '18'},
+      {'attrs': {'class': 'L'}, 'href': 'URL?x=19', 'type': 'page', 'value': '19'},
+      {'attrs': {'class': 'D'}, 'href': '', 'type': 'span', 'value': '..'}]}
+
 
