@@ -307,7 +307,7 @@ class Page(list):
 
     def pager(self, format='~2~', url=None, show_if_single_page=False, separator=' ',
         symbol_first='&lt;&lt;', symbol_last='&gt;&gt;', symbol_previous='&lt;', symbol_next='&gt;',
-        link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict()):
+        link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict(), pagerlink=None):
         """
         Return string with links to other pages (e.g. '1 .. 5 6 7 [8] 9 10 11 .. 50').
 
@@ -403,6 +403,7 @@ class Page(list):
         self.link_attr = link_attr
         self.dotdot_attr = dotdot_attr
         self.url = url
+        self.pagerlink = pagerlink or self._pagerlink
 
         # Don't show navigator if there is no more than one page
         if self.page_count == 0 or (self.page_count == 1 and not show_if_single_page):
@@ -422,13 +423,13 @@ class Page(list):
             'last_item': self.last_item,
             'item_count': self.item_count,
             'link_first': self.page>self.first_page and \
-                    self._pagerlink(self.first_page, symbol_first, **self.link_attr) or '',
+                    self.pagerlink(self.first_page, symbol_first, **self.link_attr) or '',
             'link_last': self.page<self.last_page and \
-                    self._pagerlink(self.last_page, symbol_last, **self.link_attr) or '',
+                    self.pagerlink(self.last_page, symbol_last, **self.link_attr) or '',
             'link_previous': self.previous_page and \
-                    self._pagerlink(self.previous_page, symbol_previous, **self.link_attr) or '',
+                    self.pagerlink(self.previous_page, symbol_previous, **self.link_attr) or '',
             'link_next': self.next_page and \
-                    self._pagerlink(self.next_page, symbol_next, **self.link_attr) or ''
+                    self.pagerlink(self.next_page, symbol_next, **self.link_attr) or ''
         })
 
         return result
@@ -495,7 +496,7 @@ class Page(list):
 
     def link_map(self, format='~2~', url=None, show_if_single_page=False, separator=' ',
               symbol_first='&lt;&lt;', symbol_last='&gt;&gt;', symbol_previous='&lt;', symbol_next='&gt;',
-              link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict()):
+              link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict(), pagerlink=None):
         """ Return map with links to other pages if default pager() function is not suitable solution.
         format:
             Format string that defines how the pager would be normally rendered rendered. Uses same arguments as pager()
@@ -630,7 +631,6 @@ class Page(list):
         re.sub to replace occurences of ~\d+~ by a sequence of page links.
         """
         radius = int(regexp_match.group(1))
-
         link_map = self._gen_link_map(radius)
 
         # Compute the first and last page number within the radius
@@ -647,14 +647,14 @@ class Page(list):
         if self.page != self.first_page and self.first_page < leftmost_page:
             page = link_map['first_page']
             text = str(page['value'])
-            nav_items.append(self._pagerlink(text, text, **page['attrs']))
+            nav_items.append(self.pagerlink(text, text, **page['attrs']))
 
         for item in link_map['range_pages']:
             text = str(item['value'])
             if item['attrs'] and item['type'] in ('span', 'current_page'):
                 text = make_html_tag('span', **item['attrs']) + text + '</span>'
             if item['type'] == 'page':
-                nav_items.append(self._pagerlink(text, text, **item['attrs']))
+                nav_items.append(self.pagerlink(text, text, **item['attrs']))
             else:
                 nav_items.append(text)
 
@@ -663,7 +663,7 @@ class Page(list):
         if self.page != self.last_page and rightmost_page < self.last_page:
             page = link_map['last_page']
             text = str(page['value'])
-            nav_items.append(self._pagerlink(text, text, **page['attrs']))
+            nav_items.append(self.pagerlink(text, text, **page['attrs']))
 
         return self.separator.join(nav_items)
 
@@ -677,7 +677,7 @@ class Page(list):
 
         return self.url.replace('$page', str(page_number))
 
-    def _pagerlink(self, page_number, text, **link_attr):
+    def _pagerlink(self, page_number, text, **attrs):
         """
         Create an A-HREF tag that points to another page.
 
@@ -690,7 +690,7 @@ class Page(list):
             Text to be printed in the A-HREF tag
         """
         target_url = self.url_maker(page_number)
-        a_tag = make_html_tag('a', text=text, href=target_url, **link_attr)
+        a_tag = make_html_tag('a', text=text, href=target_url, **attrs)
         return a_tag
 
 
