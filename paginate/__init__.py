@@ -452,10 +452,6 @@ class Page(list):
 
         nav_items["first_page"] = {"type": "first_page", "value": self.first_page, "attrs": {},
                                    "href":  self.url_maker(str(self.first_page))}
-        # Create a link to the first page (unless we are on the first page
-        # or there would be no need to insert '..' spacers)
-        if self.page != self.first_page and self.first_page < leftmost_page:
-            nav_items['range_pages'].append(nav_items["first_page"])
 
         # Insert dots if there are pages between the first page
         # and the currently displayed page range
