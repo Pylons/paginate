@@ -107,12 +107,12 @@ page's items by their index number please note that you have to subtract 1.
 """
 
 __author__ = "Christoph Haas"
-__copyright__ = "Copyright 2007-2012 Christoph Haas"
+__copyright__ = "Copyright 2007-2015 Christoph Haas and contributors"
 __credits__ = ["Mike Orr"]
 __license__ = "MIT"
-__version__ = "0.4.3"
-__maintainer__ = "Christoph Haas"
-__email__ = "email@christoph-haas.de"
+__version__ = "0.5.0"
+__maintainer__ = "Marcin Lulek, Luke Crooks"
+__email__ = "info@webreactor.eu, luke@pumalo.org"
 __status__ = "Beta"
 
 

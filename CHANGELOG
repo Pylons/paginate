@@ -1,6 +1,9 @@
-Version 0.3.2 - 2008-01-31
+Version 0.5.0 - 2015-08-29
 --------------------------
-Public release on PyPi
+Changes:
+- link_tag callable can now be passed to generate custom link markup
+- page object now has link_map() method that returns a mapping of information useful for generating
+  custom markup based on paginator data
 
 Version 0.4.0 - 2012-12-06
 --------------------------
@@ -34,3 +37,7 @@ Changes:
   &lt; and &gt; instead of "<" and ">" now.
 - Page.__repr__ now returns a brief representation. E.g. <paginate.Page: 1 of 1>
   Page.__str__ returns the verbose view you may be used to.
+
+Version 0.3.2 - 2008-01-31
+--------------------------
+Public release on PyPi
