@@ -70,6 +70,24 @@ Results in::
 
     '<a class="L" href="URL?x=1">&lt;&lt;</a> <a class="L" href="URL?x=14">&lt;</a> <a class="L" href="URL?x=1">1</a> <span class="D">..</span> <a class="L" href="URL?x=11">11</a> <a class="L" href="URL?x=12">12</a> <a class="L" href="URL?x=13">13</a> <a class="L" href="URL?x=14">14</a> <span class="C">15</span> <a class="L" href="URL?x=16">16</a> <a class="L" href="URL?x=17">17</a> <a class="L" href="URL?x=18">18</a> <a class="L" href="URL?x=19">19</a> <span class="D">..</span> <a class="L" href="URL?x=68">68</a> <a class="L" href="URL?x=16">&gt;</a> <a class="L" href="URL?x=68">&gt;&gt;</a> (Page 15 our of 68 - total items 1010)'
 
+Using url maker to generate links to specific result ranges
+-----------------------------------------------------------
+
+You can pass `url_maker` Callback to generate the URL of other pages, given its numbers.
+Must accept one int parameter and return a URI string.
+
+Example::
+
+    def url_maker(page_number):
+        return str('foo/%s' % page_number)
+    page = paginate.Page(range(100), page=1, url_maker=url_maker)
+    eq_(page.pager(), '1 <a href="foo/2">2</a> <a href="foo/3">3</a> .. <a href="foo/5">5</a>')
+
+
+
+Alternatively if you will not pass the link builder function, the pager() method can also accept `url` argument that contains
+ URL that page links will point to. Make sure it contains the string $page which will be replaced by the actual page number.
+ Must be given unless a url_maker is specified to __init__, in which case this parameter is ignored.
 
 Using link information for custom paginator templates
 -----------------------------------------------------
