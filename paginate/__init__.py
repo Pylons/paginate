@@ -414,7 +414,11 @@ class Page(list):
         if self.page_count == 0 or (self.page_count == 1 and not show_if_single_page):
             return ''
 
-        radius = re.search(r'~(\d+)~', format).group(1)
+        regex_res = re.search(r'~(\d+)~', format)
+        if regex_res:
+            radius = regex_res.group(1)
+        else:
+            radius = 2
         radius = int(radius)
         link_map = self.link_map(
             format=format, url=url, show_if_single_page=show_if_single_page, separator=separator,
@@ -561,7 +565,11 @@ class Page(list):
         self.dotdot_attr = dotdot_attr
         self.url = url
 
-        radius = re.search(r'~(\d+)~', format).group(1)
+        regex_res = re.search(r'~(\d+)~', format)
+        if regex_res:
+            radius = regex_res.group(1)
+        else:
+            radius = 2
         radius = int(radius)
 
         # Compute the first and last page number within the radius
