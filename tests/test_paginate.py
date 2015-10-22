@@ -214,6 +214,18 @@ def test_url_generation():
     eq_(page.pager(), '1 <a href="x2">2</a> <a href="x3">3</a> .. <a href="x5">5</a>')
 
 
+def test_pager_without_any_pattern():
+    def url_maker(page_number):
+        return str('x%s' % page_number)
+    page = paginate.Page(range(100), page=1, url_maker=url_maker)
+    eq_(page.pager(''), '')
+
+def test_pager_without_radius_pattern():
+    def url_maker(page_number):
+        return str('x%s' % page_number)
+    page = paginate.Page(range(100), page=2, url_maker=url_maker)
+    eq_(page.pager('$link_first FOO $link_last'), '<a href="x1">&lt;&lt;</a> FOO <a href="x5">&gt;&gt;</a>')
+
 class UnsliceableSequence(object):
    def __init__(self, seq):
       self.l = seq

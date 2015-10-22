@@ -85,9 +85,9 @@ Example::
 
 
 
-Alternatively if you will not pass the link builder function, the pager() method can also accept `url` argument that contains
- URL that page links will point to. Make sure it contains the string $page which will be replaced by the actual page number.
- Must be given unless a url_maker is specified to __init__, in which case this parameter is ignored.
+Alternatively if you will not pass the link builder function, the pager() method can also accept `url` argument that contains URL that page links will point to.
+Make sure it contains the string $page which will be replaced by the actual page number.
+Must be given unless a url_maker is specified to __init__, in which case this parameter is ignored.
 
 Using link information for custom paginator templates
 -----------------------------------------------------
