@@ -225,6 +225,23 @@ class Page(list):
 
         self.items_per_page = items_per_page
 
+        # We subclassed "list" so we need to call its init() method
+        # and fill the new list with the items to be displayed on the page.
+        # We use list() so that the items on the current page are retrieved
+        # only once. In an SQL context that could otherwise lead to running the
+        # same SQL query every time items would be accessed.
+        # We do this here, prior to calling len() on the collection so that a
+        # wrapper class can execute a query with the knowledge of what the
+        # slice will be (for efficiency) and, in the same query, ask for the
+        # total number of items and only execute one query.
+        try:
+            first = (self.page - 1) * items_per_page + 1
+            last = first + items_per_page - 1
+            self.items = list(self.collection[first:last])
+        except TypeError:
+            raise TypeError("Your collection of type "+type(self.collection)+
+                            " cannot be handled by paginate.")
+
         # Unless the user tells us how many items the collections has
         # we calculate that ourselves.
         if item_count is not None:
@@ -248,19 +265,6 @@ class Page(list):
             #       items_per_page if the last page is not full
             self.first_item = (self.page - 1) * items_per_page + 1
             self.last_item = min(self.first_item + items_per_page - 1, self.item_count)
-
-            # We subclassed "list" so we need to call its init() method
-            # and fill the new list with the items to be displayed on the page.
-            # We use list() so that the items on the current page are retrieved
-            # only once. In an SQL context that could otherwise lead to running the same
-            # SQL query every time items would be accessed.
-            try:
-                first = self.first_item - 1
-                last = self.last_item
-                self.items = list(self.collection[first:last])
-            except TypeError:
-                raise TypeError("Your collection of type "+type(self.collection)+
-                                " cannot be handled by paginate.")
 
             # Links to previous and next page
             if self.page > self.first_page:
