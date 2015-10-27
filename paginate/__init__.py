@@ -222,6 +222,11 @@ class Page(list):
             self.page = int(page) # make it int() if we get it as a string
         except (ValueError, TypeError):
             self.page = 1
+        # normally page should be always at least 1 but the original maintainer
+        # decided that for empty collection and empty page it can be...0? (based on tests)
+        # preserving behavior for BW compat
+        if self.collection and self.page < 1:
+            self.page = 1
 
         self.items_per_page = items_per_page
 
@@ -235,8 +240,9 @@ class Page(list):
         # slice will be (for efficiency) and, in the same query, ask for the
         # total number of items and only execute one query.
         try:
-            first = (self.page - 1) * items_per_page + 1
-            last = first + items_per_page - 1
+            first = (self.page - 1) * items_per_page
+            last = first + items_per_page
+            print(first, last)
             self.items = list(self.collection[first:last])
         except TypeError:
             raise TypeError("Your collection of type "+type(self.collection)+
