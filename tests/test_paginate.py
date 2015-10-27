@@ -75,7 +75,7 @@ def test_slice_page_0():
     items = list(range(1000))
     page = paginate.Page(items, page=0, items_per_page=10)
     eq_(page.page, 1)
-    eq_(page.items, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    eq_(page.items, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
 def test_slice_page_5():
     items = list(range(1000))
