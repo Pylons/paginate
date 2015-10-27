@@ -72,17 +72,34 @@ def test_many_pages():
 
 
 def test_slice_page_0():
-    items = list(range(1000))
+    items = list(range(1,1000))
     page = paginate.Page(items, page=0, items_per_page=10)
     eq_(page.page, 1)
-    eq_(page.items, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    eq_(page.first_item, 1)
+    eq_(page.last_item, 10)
+    eq_(page.first_page, 1)
+    eq_(page.last_page, 100)
+    eq_(page.previous_page, None)
+    eq_(page.next_page, 2)
+    eq_(page.items_per_page, 10)
+    eq_(page.item_count, 999)
+    eq_(page.page_count, 100)
+    eq_(page.items, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
 def test_slice_page_5():
-    items = list(range(1000))
+    items = list(range(1, 1000))
     page = paginate.Page(items, page=5, items_per_page=10)
     eq_(page.page, 5)
-    print(page.items)
-    eq_(page.items, [40, 41, 42, 43, 44, 45, 46, 47, 48, 49])
+    eq_(page.first_item, 41)
+    eq_(page.last_item, 50)
+    eq_(page.first_page, 1)
+    eq_(page.last_page, 100)
+    eq_(page.previous_page, 4)
+    eq_(page.next_page, 6)
+    eq_(page.items_per_page, 10)
+    eq_(page.item_count, 999)
+    eq_(page.page_count, 100)
+    eq_(page.items, [41, 42, 43, 44, 45, 46, 47, 48, 49, 50])
 
 
 def test_link_map():
