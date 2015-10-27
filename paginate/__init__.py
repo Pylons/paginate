@@ -242,7 +242,6 @@ class Page(list):
         try:
             first = (self.page - 1) * items_per_page
             last = first + items_per_page
-            print(first, last)
             self.items = list(self.collection[first:last])
         except TypeError:
             raise TypeError("Your collection of type "+type(self.collection)+
