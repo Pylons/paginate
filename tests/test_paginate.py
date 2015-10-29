@@ -17,7 +17,7 @@ def test_empty_list():
     """Test whether an empty list is handled correctly."""
     items = []
     page = paginate.Page(items, page=0)
-    eq_(page.page, 0)
+    eq_(page.page, 1)
     eq_(page.first_item, None)
     eq_(page.last_item, None)
     eq_(page.first_page, None)
