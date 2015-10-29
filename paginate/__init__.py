@@ -225,7 +225,7 @@ class Page(list):
         # normally page should be always at least 1 but the original maintainer
         # decided that for empty collection and empty page it can be...0? (based on tests)
         # preserving behavior for BW compat
-        if self.collection and self.page < 1:
+        if len(self.collection) > 0 and self.page < 1:
             self.page = 1
 
         self.items_per_page = items_per_page
