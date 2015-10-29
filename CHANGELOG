@@ -1,4 +1,11 @@
-Version 0.5.1 - 2015-08-29
+Version 0.5.2 - 2015-08-29
+--------------------------
+Changes:
+- Handle the slice prior to handling the length - for better experience with
+  various databases that include item count in results
+- bugfixes
+
+Version 0.5.1 - 2015-10-22
 --------------------------
 Changes:
 - bugfixes
