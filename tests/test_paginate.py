@@ -222,6 +222,15 @@ def test_link_map():
                                       'value': '8'}]}
     eq_(result, l_page_result)
 
+    page = paginate.Page(items, page=100, items_per_page=15)
+    result = page.link_map(format, url=url, symbol_next=u'nëxt', symbol_previous=u'prëvious')
+    next_page = {'attrs': {},
+                 'href': u'http://example.org/foo/page=8',
+                 'number': 8,
+                 'type': 'next_page',
+                 'value': u'nëxt'}
+    eq_(next_page, result['next_page'])
+
 def test_make_html_tag():
     """Test the make_html_tag() function"""
     eq_(paginate.make_html_tag('div'), '<div>')
