@@ -597,6 +597,14 @@ class Page(list):
             "range_pages": []
         }
 
+        def unicode2html(symbol):
+            if isinstance(symbol, unicode):
+                return symbol.encode('ascii', 'xmlcharrefreplace')
+            return symbol
+
+        (symbol_first, symbol_last, symbol_next, symbol_previous) = \
+            [unicode2html(x) for x in [symbol_first, symbol_last, symbol_next, symbol_previous]]
+
         nav_items["first_page"] = {"type": "first_page", "value": str(symbol_first), "attrs": self.link_attr,
                                    "number": self.first_page, "href": self.url_maker(self.first_page)}
 
