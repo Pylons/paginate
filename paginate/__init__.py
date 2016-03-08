@@ -118,7 +118,13 @@ __status__ = "Beta"
 
 import re
 from string import Template
+import sys
 
+# are we running at least python 3.x ?
+PY3 = sys.version_info[0] >= 3
+
+if PY3:
+    unicode = str
 
 # Since the items on a page are mainly a list we subclass the "list" type
 class Page(list):
@@ -597,7 +603,7 @@ class Page(list):
             "range_pages": []
         }
 
-        nav_items["first_page"] = {"type": "first_page", "value": str(symbol_first), "attrs": self.link_attr,
+        nav_items["first_page"] = {"type": "first_page", "value": unicode(symbol_first), "attrs": self.link_attr,
                                    "number": self.first_page, "href": self.url_maker(self.first_page)}
 
         # Insert dots if there are pages between the first page
@@ -611,13 +617,13 @@ class Page(list):
             # Highlight the current page number and do not use a link
             if thispage == self.page:
                 # Wrap in a SPAN tag if curpage_attr is set
-                nav_items["range_pages"].append({"type": "current_page", "value": str(thispage), "number": thispage,
+                nav_items["range_pages"].append({"type": "current_page", "value": unicode(thispage), "number": thispage,
                                                  "attrs": self.curpage_attr, "href": self.url_maker(thispage)})
                 nav_items["current_page"] = {"value": thispage, "attrs": self.curpage_attr,
                                              "type": "current_page", "href": self.url_maker(thispage)}
             # Otherwise create just a link to that page
             else:
-                nav_items["range_pages"].append({"type": "page", "value": str(thispage), "number": thispage,
+                nav_items["range_pages"].append({"type": "page", "value": unicode(thispage), "number": thispage,
                                                  "attrs": self.link_attr, "href": self.url_maker(thispage)})
 
         # Insert dots if there are pages between the displayed
@@ -629,14 +635,14 @@ class Page(list):
 
         # Create a link to the very last page (unless we are on the last
         # page or there would be no need to insert '..' spacers)
-        nav_items["last_page"] = {"type": "last_page", "value": str(symbol_last), "attrs": self.link_attr,
+        nav_items["last_page"] = {"type": "last_page", "value": unicode(symbol_last), "attrs": self.link_attr,
                                   "href": self.url_maker(self.last_page), "number":self.last_page}
 
-        nav_items["previous_page"] = {"type": "previous_page", "value": str(symbol_previous),
+        nav_items["previous_page"] = {"type": "previous_page", "value": unicode(symbol_previous),
                                       "attrs": self.link_attr, "number": self.previous_page or self.first_page,
                                       "href": self.url_maker(self.previous_page or self.first_page)}
 
-        nav_items["next_page"] = {"type": "next_page", "value": str(symbol_next),
+        nav_items["next_page"] = {"type": "next_page", "value": unicode(symbol_next),
                                   "attrs": self.link_attr, "number": self.next_page or self.last_page,
                                   "href": self.url_maker(self.next_page or self.last_page)}
 
@@ -657,7 +663,7 @@ class Page(list):
         # or there would be no need to insert '..' spacers)
         if self.page != self.first_page and self.first_page < leftmost_page:
             page = link_map['first_page'].copy()
-            page['value'] = str(page['number'])
+            page['value'] = unicode(page['number'])
             nav_items.append(self.link_tag(page))
 
         for item in link_map['range_pages']:
@@ -667,7 +673,7 @@ class Page(list):
         # page or there would be no need to insert '..' spacers)
         if self.page != self.last_page and rightmost_page < self.last_page:
             page = link_map['last_page'].copy()
-            page['value'] = str(page['number'])
+            page['value'] = unicode(page['number'])
             nav_items.append(self.link_tag(page))
 
         return self.separator.join(nav_items)
@@ -680,7 +686,7 @@ class Page(list):
         if "$page" not in self.url:
             raise Exception("The 'url' parameter must contain a '$page' placeholder.")
 
-        return self.url.replace('$page', str(page_number))
+        return self.url.replace('$page', unicode(page_number))
 
     @staticmethod
     def default_link_tag(item):
