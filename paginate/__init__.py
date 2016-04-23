@@ -435,6 +435,7 @@ class Page(list):
         else:
             radius = 2
         radius = int(radius)
+        self.radius = radius
         link_map = self.link_map(
             format=format, url=url, show_if_single_page=show_if_single_page, separator=separator,
             symbol_first=symbol_first, symbol_last=symbol_last, symbol_previous=symbol_previous,
@@ -586,6 +587,7 @@ class Page(list):
         else:
             radius = 2
         radius = int(radius)
+        self.radius = radius
 
         # Compute the first and last page number within the radius
         # e.g. '1 .. 5 6 [7] 8 9 .. 12'
@@ -600,6 +602,7 @@ class Page(list):
             "previous_page": None,
             "next_page": None,
             "current_page": None,
+            "radius": self.radius,
             "range_pages": []
         }
 

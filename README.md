@@ -116,7 +116,8 @@ Returns something like::
       {'attrs': {'class': 'L'}, 'href': 'URL?x=17', 'type': 'page', 'value': '17'},
       {'attrs': {'class': 'L'}, 'href': 'URL?x=18', 'type': 'page', 'value': '18'},
       {'attrs': {'class': 'L'}, 'href': 'URL?x=19', 'type': 'page', 'value': '19'},
-      {'attrs': {'class': 'D'}, 'href': '', 'type': 'span', 'value': '..'}]}
+      {'attrs': {'class': 'D'}, 'href': '', 'type': 'span', 'value': '..'}],
+      'radius': 4}
 
 
 Using link_tag callable to generate custom link markup
