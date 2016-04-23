@@ -4,49 +4,43 @@
 # See the file LICENSE for copying permission.
 
 """"Test paginate module."""
-import sys
-import unittest
-
-from nose.plugins.skip import SkipTest
-from nose.tools import eq_, raises, assert_in, raises
-
-import pprint
+import pytest
 import paginate
 
 def test_empty_list():
     """Test whether an empty list is handled correctly."""
     items = []
     page = paginate.Page(items, page=0)
-    eq_(page.page, 1)
-    eq_(page.first_item, None)
-    eq_(page.last_item, None)
-    eq_(page.first_page, None)
-    eq_(page.last_page, None)
-    eq_(page.previous_page, None)
-    eq_(page.next_page, None)
-    eq_(page.items_per_page, 20)
-    eq_(page.item_count, 0)
-    eq_(page.page_count, 0)
-    eq_(page.pager(url="http://example.org/page=$page"), '')
-    eq_(page.pager(url="http://example.org/page=$page", show_if_single_page=True), '')
+    assert page.page == 1
+    assert page.first_item is None
+    assert page.last_item is None
+    assert page.first_page is None
+    assert page.last_page is None
+    assert page.previous_page is None
+    assert page.next_page is None
+    assert page.items_per_page == 20
+    assert page.item_count == 0
+    assert page.page_count == 0
+    assert page.pager(url="http://example.org/page=$page") == ''
+    assert page.pager(url="http://example.org/page=$page", show_if_single_page=True) == ''
 
 def test_one_page():
     """Test that fits 10 items on a single 10-item page."""
     items = range(10)
     page = paginate.Page(items, page=0, items_per_page=10)
     url = "http://example.org/foo/page=$page"
-    eq_(page.page, 1)
-    eq_(page.first_item, 1)
-    eq_(page.last_item, 10)
-    eq_(page.first_page, 1)
-    eq_(page.last_page, 1)
-    eq_(page.previous_page, None)
-    eq_(page.next_page, None)
-    eq_(page.items_per_page, 10)
-    eq_(page.item_count, 10)
-    eq_(page.page_count, 1)
-    eq_(page.pager(url=url), '')
-    eq_(page.pager(url=url, show_if_single_page=True), '1')
+    assert page.page == 1
+    assert page.first_item == 1
+    assert page.last_item == 10
+    assert page.first_page == 1
+    assert page.last_page == 1
+    assert page.previous_page is None
+    assert page.next_page is None
+    assert page.items_per_page == 10
+    assert page.item_count == 10
+    assert page.page_count == 1
+    assert page.pager(url=url) == ''
+    assert page.pager(url=url, show_if_single_page=True) == '1'
 
 def test_many_pages():
     """Test that fits 100 items on seven pages consisting of 15 items."""
@@ -54,52 +48,52 @@ def test_many_pages():
     page = paginate.Page(items, page=0, items_per_page=15)
     url = "http://example.org/foo/page=$page"
     #eq_(page.collection_type, range) <-- py3 only
-    assert_in(page.collection_type, (range,list) )
-    eq_(page.page, 1)
-    eq_(page.first_item, 1)
-    eq_(page.last_item, 15)
-    eq_(page.first_page, 1)
-    eq_(page.last_page, 7)
-    eq_(page.previous_page, None)
-    eq_(page.next_page, 2)
-    eq_(page.items_per_page, 15)
-    eq_(page.item_count, 100)
-    eq_(page.page_count, 7)
-    eq_(page.pager(url=url), '1 <a href="http://example.org/foo/page=2">2</a> <a href="http://example.org/foo/page=3">3</a> .. <a href="http://example.org/foo/page=7">7</a>')
-    eq_(page.pager(url=url, separator='_'), '1_<a href="http://example.org/foo/page=2">2</a>_<a href="http://example.org/foo/page=3">3</a>_.._<a href="http://example.org/foo/page=7">7</a>')
-    eq_(page.pager(url=url, link_attr={'style':'linkstyle'}, curpage_attr={'style':'curpagestyle'}, dotdot_attr={'style':'dotdotstyle'}),
-        '<span style="curpagestyle">1</span> <a href="http://example.org/foo/page=2" style="linkstyle">2</a> <a href="http://example.org/foo/page=3" style="linkstyle">3</a> <span style="dotdotstyle">..</span> <a href="http://example.org/foo/page=7" style="linkstyle">7</a>')
+    assert issubclass(page.collection_type, (range,list)) is True
+    assert page.page == 1
+    assert page.first_item == 1
+    assert page.last_item == 15
+    assert page.first_page == 1
+    assert page.last_page == 7
+    assert page.previous_page is None
+    assert page.next_page == 2
+    assert page.items_per_page == 15
+    assert page.item_count == 100
+    assert page.page_count == 7
+    assert page.pager(url=url) == '1 <a href="http://example.org/foo/page=2">2</a> <a href="http://example.org/foo/page=3">3</a> .. <a href="http://example.org/foo/page=7">7</a>'
+    assert page.pager(url=url, separator='_') == '1_<a href="http://example.org/foo/page=2">2</a>_<a href="http://example.org/foo/page=3">3</a>_.._<a href="http://example.org/foo/page=7">7</a>'
+    assert page.pager(url=url, link_attr={'style':'linkstyle'}, curpage_attr={'style':'curpagestyle'}, dotdot_attr={'style':'dotdotstyle'}) == '<span style="curpagestyle">1</span> <a href="http://example.org/foo/page=2" style="linkstyle">2</a> <a href="http://example.org/foo/page=3" style="linkstyle">3</a> <span style="dotdotstyle">..</span> <a href="http://example.org/foo/page=7" style="linkstyle">7</a>'
 
 
 def test_slice_page_0():
     items = list(range(1,1000))
     page = paginate.Page(items, page=0, items_per_page=10)
-    eq_(page.page, 1)
-    eq_(page.first_item, 1)
-    eq_(page.last_item, 10)
-    eq_(page.first_page, 1)
-    eq_(page.last_page, 100)
-    eq_(page.previous_page, None)
-    eq_(page.next_page, 2)
-    eq_(page.items_per_page, 10)
-    eq_(page.item_count, 999)
-    eq_(page.page_count, 100)
-    eq_(page.items, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    assert page.page == 1
+    assert page.first_item == 1
+    assert page.last_item == 10
+    assert page.first_page == 1
+    assert page.last_page == 100
+    assert page.previous_page is None
+    assert page.next_page == 2
+    assert page.items_per_page == 10
+    assert page.item_count == 999
+    assert page.page_count == 100
+    assert page.items == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
 
 def test_slice_page_5():
     items = list(range(1, 1000))
     page = paginate.Page(items, page=5, items_per_page=10)
-    eq_(page.page, 5)
-    eq_(page.first_item, 41)
-    eq_(page.last_item, 50)
-    eq_(page.first_page, 1)
-    eq_(page.last_page, 100)
-    eq_(page.previous_page, 4)
-    eq_(page.next_page, 6)
-    eq_(page.items_per_page, 10)
-    eq_(page.item_count, 999)
-    eq_(page.page_count, 100)
-    eq_(page.items, [41, 42, 43, 44, 45, 46, 47, 48, 49, 50])
+    assert page.page == 5
+    assert page.first_item == 41
+    assert page.last_item == 50
+    assert page.first_page == 1
+    assert page.last_page == 100
+    assert page.previous_page is 4
+    assert page.next_page == 6
+    assert page.items_per_page == 10
+    assert page.item_count == 999
+    assert page.page_count == 100
+    assert page.items == [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
 
 
 def test_link_map():
@@ -162,8 +156,9 @@ def test_link_map():
                                      'href': '',
                                      'number': None,
                                      'type': 'span',
-                                     'value': '..'}]}
-    eq_(result, fpage_result)
+                                     'value': '..'}],
+                    'radius': 4}
+    assert result == fpage_result
     page = paginate.Page(items, page=100, items_per_page=15)
     result = page.link_map(format, url=url)
     l_page_result = {'current_page': {'attrs': {},
@@ -219,8 +214,9 @@ def test_link_map():
                                       'href': 'http://example.org/foo/page=8',
                                       'number': 8,
                                       'type': 'current_page',
-                                      'value': '8'}]}
-    eq_(result, l_page_result)
+                                      'value': '8'}],
+                     'radius': 4}
+    assert result == l_page_result
 
     page = paginate.Page(items, page=100, items_per_page=15)
     result = page.link_map(format, url=url, symbol_next=u'nëxt', symbol_previous=u'prëvious')
@@ -229,43 +225,42 @@ def test_link_map():
                  'number': 8,
                  'type': 'next_page',
                  'value': u'nëxt'}
-    eq_(next_page, result['next_page'])
+    assert next_page == result['next_page']
 
 def test_make_html_tag():
     """Test the make_html_tag() function"""
-    eq_(paginate.make_html_tag('div'), '<div>')
-    eq_(paginate.make_html_tag('a',href="/another/page"), '<a href="/another/page">')
-    eq_(paginate.make_html_tag('a',href="/another/page",text="foo"), '<a href="/another/page">foo</a>')
-    eq_(paginate.make_html_tag('a',href=u"/другой/страница",text="foo"), u'<a href="/другой/страница">foo</a>')
-    eq_(paginate.make_html_tag('a',href="/another/page",text="foo",onclick="$('#mydiv').focus();"), """<a href="/another/page" onclick="$('#mydiv').focus();">foo</a>""")
-    eq_(paginate.make_html_tag('span',style='green'), '<span style="green">')
-    eq_(paginate.make_html_tag('div', _class='red', id='maindiv'), '<div class="red" id="maindiv">')
+    assert paginate.make_html_tag('div') == '<div>'
+    assert paginate.make_html_tag('a', href="/another/page") == '<a href="/another/page">'
+    assert paginate.make_html_tag('a', href="/another/page", text="foo") == '<a href="/another/page">foo</a>'
+    assert paginate.make_html_tag('a', href=u"/другой/страница", text="foo") == u'<a href="/другой/страница">foo</a>'
+    assert paginate.make_html_tag('a', href="/another/page", text="foo", onclick="$('#mydiv').focus();") == """<a href="/another/page" onclick="$('#mydiv').focus();">foo</a>"""
+    assert paginate.make_html_tag('span', style='green') == '<span style="green">'
+    assert paginate.make_html_tag('div', _class='red', id='maindiv') == '<div class="red" id="maindiv">'
 
 def test_url_assertion():
     page = paginate.Page(range(100), page=0, items_per_page=10)
     url = "http://example.org/"
-    @raises(Exception)
-    def pager():
+    with pytest.raises(Exception):
         page.pager(url=url)
 
 def test_url_generation():
     def url_maker(page_number):
         return str('x%s' % page_number)
     page = paginate.Page(range(100), page=1, url_maker=url_maker)
-    eq_(page.pager(), '1 <a href="x2">2</a> <a href="x3">3</a> .. <a href="x5">5</a>')
+    assert page.pager() == '1 <a href="x2">2</a> <a href="x3">3</a> .. <a href="x5">5</a>'
 
 
 def test_pager_without_any_pattern():
     def url_maker(page_number):
         return str('x%s' % page_number)
     page = paginate.Page(range(100), page=1, url_maker=url_maker)
-    eq_(page.pager(''), '')
+    assert page.pager('') == ''
 
 def test_pager_without_radius_pattern():
     def url_maker(page_number):
         return str('x%s' % page_number)
     page = paginate.Page(range(100), page=2, url_maker=url_maker)
-    eq_(page.pager('$link_first FOO $link_last'), '<a href="x1">&lt;&lt;</a> FOO <a href="x5">&gt;&gt;</a>')
+    assert page.pager('$link_first FOO $link_last') == '<a href="x1">&lt;&lt;</a> FOO <a href="x5">&gt;&gt;</a>'
 
 class UnsliceableSequence(object):
    def __init__(self, seq):
@@ -282,7 +277,7 @@ class UnsliceableSequence2(UnsliceableSequence):
    def __getitem__(self, key):
         raise TypeError("unhashable type")
 
-class TestCollectionTypes(unittest.TestCase):
+class TestCollectionTypes(object):
     rng = list(range(10))   # A list in both Python 2 and 3.
 
     def test_list(self):
@@ -291,14 +286,14 @@ class TestCollectionTypes(unittest.TestCase):
     def test_tuple(self):
         paginate.Page(tuple(self.rng))
 
-    @raises(TypeError)
     def test_unsliceable_sequence(self):
-        paginate.Page(UnsliceableSequence(self.rng))
+        with pytest.raises(TypeError):
+            paginate.Page(UnsliceableSequence(self.rng))
 
-    @raises(TypeError)
     def test_unsliceable_sequence2(self):
-        paginate.Page(UnsliceableSequence2(self.rng))
+        with pytest.raises(TypeError):
+            paginate.Page(UnsliceableSequence2(self.rng))
 
-    @raises(TypeError)
     def test_unsliceable_sequence3(self):
-        paginate.Page(dict(one=1))
+        with pytest.raises(TypeError):
+            paginate.Page(dict(one=1))
