@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='paginate',
-    version='0.5.4',
+    version='0.5.5',
     description="Divides large result sets into pages for easier browsing",
     long_description="""
         This module helps divide up large result sets into pages or chunks.

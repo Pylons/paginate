@@ -47,8 +47,7 @@ def test_many_pages():
     items = range(100)
     page = paginate.Page(items, page=0, items_per_page=15)
     url = "http://example.org/foo/page=$page"
-    #eq_(page.collection_type, range) <-- py3 only
-    assert issubclass(page.collection_type, (range,list)) is True
+    assert hasattr(page.collection_type, '__iter__') is True
     assert page.page == 1
     assert page.first_item == 1
     assert page.last_item == 15
@@ -226,6 +225,22 @@ def test_link_map():
                  'type': 'next_page',
                  'value': u'nëxt'}
     assert next_page == result['next_page']
+
+def test_empty_link_map():
+    """Test that fits 10 items on a single 10-item page."""
+    items = []
+    page = paginate.Page(items, page=0, items_per_page=15)
+    url = "http://example.org/foo/page=$page"
+    format = '$link_first $link_previous ~4~ $link_next $link_last (Page $page our of $page_count - total items $item_count)'
+    result = page.link_map(format, url=url)
+    assert result == {'current_page': None,
+                      'first_page': None,
+                      'last_page': None,
+                      'next_page': None,
+                      'previous_page': None,
+                      'radius': 4,
+                      'range_pages': []}
+
 
 def test_make_html_tag():
     """Test the make_html_tag() function"""

@@ -593,8 +593,10 @@ class Page(list):
         # e.g. '1 .. 5 6 [7] 8 9 .. 12'
         # -> leftmost_page  = 5
         # -> rightmost_page = 9
-        leftmost_page = max(self.first_page, (self.page-radius))
-        rightmost_page = min(self.last_page, (self.page+radius))
+        leftmost_page = max(self.first_page, (self.page-radius)) if \
+            self.first_page else None
+        rightmost_page = min(self.last_page, (self.page+radius)) if \
+            self.last_page else None
 
         nav_items = {
             "first_page": None,
@@ -605,6 +607,9 @@ class Page(list):
             "radius": self.radius,
             "range_pages": []
         }
+
+        if leftmost_page is None or rightmost_page is None:
+            return nav_items
 
         nav_items["first_page"] = {"type": "first_page", "value": unicode(symbol_first), "attrs": self.link_attr,
                                    "number": self.first_page, "href": self.url_maker(self.first_page)}
