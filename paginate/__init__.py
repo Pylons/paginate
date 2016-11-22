@@ -126,6 +126,7 @@ PY3 = sys.version_info[0] >= 3
 if PY3:
     unicode = str
 
+
 # Since the items on a page are mainly a list we subclass the "list" type
 class Page(list):
     """A list/iterator representing the items on one page of a larger collection.
@@ -250,8 +251,8 @@ class Page(list):
             last = first + items_per_page
             self.items = list(self.collection[first:last])
         except TypeError:
-            raise TypeError("Your collection of type "+type(self.collection)+
-                            " cannot be handled by paginate.")
+            raise TypeError("Your collection of type {} cannot be handled "
+                            "by paginate.".format(type(self.collection)))
 
         # Unless the user tells us how many items the collections has
         # we calculate that ourselves.

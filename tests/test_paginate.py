@@ -7,6 +7,12 @@
 import pytest
 import paginate
 
+def test_wrong_collection():
+    """Test whether an empty list is handled correctly."""
+    with pytest.raises(TypeError):
+        page = paginate.Page({}, page=0)
+
+
 def test_empty_list():
     """Test whether an empty list is handled correctly."""
     items = []
@@ -22,7 +28,9 @@ def test_empty_list():
     assert page.item_count == 0
     assert page.page_count == 0
     assert page.pager(url="http://example.org/page=$page") == ''
-    assert page.pager(url="http://example.org/page=$page", show_if_single_page=True) == ''
+    assert page.pager(url="http://example.org/page=$page",
+                      show_if_single_page=True) == ''
+
 
 def test_one_page():
     """Test that fits 10 items on a single 10-item page."""
@@ -42,6 +50,7 @@ def test_one_page():
     assert page.pager(url=url) == ''
     assert page.pager(url=url, show_if_single_page=True) == '1'
 
+
 def test_many_pages():
     """Test that fits 100 items on seven pages consisting of 15 items."""
     items = range(100)
@@ -58,13 +67,17 @@ def test_many_pages():
     assert page.items_per_page == 15
     assert page.item_count == 100
     assert page.page_count == 7
-    assert page.pager(url=url) == '1 <a href="http://example.org/foo/page=2">2</a> <a href="http://example.org/foo/page=3">3</a> .. <a href="http://example.org/foo/page=7">7</a>'
-    assert page.pager(url=url, separator='_') == '1_<a href="http://example.org/foo/page=2">2</a>_<a href="http://example.org/foo/page=3">3</a>_.._<a href="http://example.org/foo/page=7">7</a>'
-    assert page.pager(url=url, link_attr={'style':'linkstyle'}, curpage_attr={'style':'curpagestyle'}, dotdot_attr={'style':'dotdotstyle'}) == '<span style="curpagestyle">1</span> <a href="http://example.org/foo/page=2" style="linkstyle">2</a> <a href="http://example.org/foo/page=3" style="linkstyle">3</a> <span style="dotdotstyle">..</span> <a href="http://example.org/foo/page=7" style="linkstyle">7</a>'
+    assert page.pager(
+        url=url) == '1 <a href="http://example.org/foo/page=2">2</a> <a href="http://example.org/foo/page=3">3</a> .. <a href="http://example.org/foo/page=7">7</a>'
+    assert page.pager(url=url,
+                      separator='_') == '1_<a href="http://example.org/foo/page=2">2</a>_<a href="http://example.org/foo/page=3">3</a>_.._<a href="http://example.org/foo/page=7">7</a>'
+    assert page.pager(url=url, link_attr={'style': 'linkstyle'},
+                      curpage_attr={'style': 'curpagestyle'}, dotdot_attr={
+            'style': 'dotdotstyle'}) == '<span style="curpagestyle">1</span> <a href="http://example.org/foo/page=2" style="linkstyle">2</a> <a href="http://example.org/foo/page=3" style="linkstyle">3</a> <span style="dotdotstyle">..</span> <a href="http://example.org/foo/page=7" style="linkstyle">7</a>'
 
 
 def test_slice_page_0():
-    items = list(range(1,1000))
+    items = list(range(1, 1000))
     page = paginate.Page(items, page=0, items_per_page=10)
     assert page.page == 1
     assert page.first_item == 1
@@ -218,13 +231,15 @@ def test_link_map():
     assert result == l_page_result
 
     page = paginate.Page(items, page=100, items_per_page=15)
-    result = page.link_map(format, url=url, symbol_next=u'nëxt', symbol_previous=u'prëvious')
+    result = page.link_map(format, url=url, symbol_next=u'nëxt',
+                           symbol_previous=u'prëvious')
     next_page = {'attrs': {},
                  'href': u'http://example.org/foo/page=8',
                  'number': 8,
                  'type': 'next_page',
                  'value': u'nëxt'}
     assert next_page == result['next_page']
+
 
 def test_empty_link_map():
     """Test that fits 10 items on a single 10-item page."""
@@ -245,12 +260,19 @@ def test_empty_link_map():
 def test_make_html_tag():
     """Test the make_html_tag() function"""
     assert paginate.make_html_tag('div') == '<div>'
-    assert paginate.make_html_tag('a', href="/another/page") == '<a href="/another/page">'
-    assert paginate.make_html_tag('a', href="/another/page", text="foo") == '<a href="/another/page">foo</a>'
-    assert paginate.make_html_tag('a', href=u"/другой/страница", text="foo") == u'<a href="/другой/страница">foo</a>'
-    assert paginate.make_html_tag('a', href="/another/page", text="foo", onclick="$('#mydiv').focus();") == """<a href="/another/page" onclick="$('#mydiv').focus();">foo</a>"""
-    assert paginate.make_html_tag('span', style='green') == '<span style="green">'
-    assert paginate.make_html_tag('div', _class='red', id='maindiv') == '<div class="red" id="maindiv">'
+    assert paginate.make_html_tag('a',
+                                  href="/another/page") == '<a href="/another/page">'
+    assert paginate.make_html_tag('a', href="/another/page",
+                                  text="foo") == '<a href="/another/page">foo</a>'
+    assert paginate.make_html_tag('a', href=u"/другой/страница",
+                                  text="foo") == u'<a href="/другой/страница">foo</a>'
+    assert paginate.make_html_tag('a', href="/another/page", text="foo",
+                                  onclick="$('#mydiv').focus();") == """<a href="/another/page" onclick="$('#mydiv').focus();">foo</a>"""
+    assert paginate.make_html_tag('span',
+                                  style='green') == '<span style="green">'
+    assert paginate.make_html_tag('div', _class='red',
+                                  id='maindiv') == '<div class="red" id="maindiv">'
+
 
 def test_url_assertion():
     page = paginate.Page(range(100), page=0, items_per_page=10)
@@ -258,9 +280,11 @@ def test_url_assertion():
     with pytest.raises(Exception):
         page.pager(url=url)
 
+
 def test_url_generation():
     def url_maker(page_number):
         return str('x%s' % page_number)
+
     page = paginate.Page(range(100), page=1, url_maker=url_maker)
     assert page.pager() == '1 <a href="x2">2</a> <a href="x3">3</a> .. <a href="x5">5</a>'
 
@@ -268,32 +292,39 @@ def test_url_generation():
 def test_pager_without_any_pattern():
     def url_maker(page_number):
         return str('x%s' % page_number)
+
     page = paginate.Page(range(100), page=1, url_maker=url_maker)
     assert page.pager('') == ''
+
 
 def test_pager_without_radius_pattern():
     def url_maker(page_number):
         return str('x%s' % page_number)
+
     page = paginate.Page(range(100), page=2, url_maker=url_maker)
-    assert page.pager('$link_first FOO $link_last') == '<a href="x1">&lt;&lt;</a> FOO <a href="x5">&gt;&gt;</a>'
+    assert page.pager(
+        '$link_first FOO $link_last') == '<a href="x1">&lt;&lt;</a> FOO <a href="x5">&gt;&gt;</a>'
+
 
 class UnsliceableSequence(object):
-   def __init__(self, seq):
-      self.l = seq
+    def __init__(self, seq):
+        self.l = seq
 
-   def __iter__(self):
-       for i in self.l:
-           yield i
+    def __iter__(self):
+        for i in self.l:
+            yield i
 
-   def __len__(self):
-       return len(self.l)
+    def __len__(self):
+        return len(self.l)
+
 
 class UnsliceableSequence2(UnsliceableSequence):
-   def __getitem__(self, key):
+    def __getitem__(self, key):
         raise TypeError("unhashable type")
 
+
 class TestCollectionTypes(object):
-    rng = list(range(10))   # A list in both Python 2 and 3.
+    rng = list(range(10))  # A list in both Python 2 and 3.
 
     def test_list(self):
         paginate.Page(self.rng)
