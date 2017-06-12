@@ -162,7 +162,7 @@ class Page(list):
         Number of the previous page. If this is the first page it returns None.
 
     next_page
-        Number of the next page. If this is the first page it returns None.
+        Number of the next page. If this is the last page it returns None.
 
     page_count
         Number of pages
