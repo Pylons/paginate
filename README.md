@@ -54,7 +54,7 @@ wrapper_class=SqlalchemyOrmWrapper as an argument. The paginate.Page instance wi
 class to access the elements.
 
 
-Generating HTML come for current page
+Generating HTML code for current page
 -------------------------------------
 
 Example::
