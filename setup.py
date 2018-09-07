@@ -32,7 +32,7 @@ setup(
     license='MIT',
     packages=find_packages(),
     extras_require={
-        "dev": ["pytest"],
+        "dev": ["pytest", "tox"],
         "lint": ["black"],
     },
     include_package_data=True,
