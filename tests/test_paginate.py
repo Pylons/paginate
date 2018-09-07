@@ -329,6 +329,11 @@ class TestCollectionTypes(object):
     def test_list(self):
         paginate.Page(self.rng)
 
+    def test_list_of_dicts(self):
+        rng = [{'a':x} for x in range(200)]
+        page = paginate.Page(rng)
+        assert page.item_count == 200
+
     def test_tuple(self):
         paginate.Page(tuple(self.rng))
 
