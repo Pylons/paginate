@@ -1,3 +1,8 @@
+Version 0.5.6 - 2016-11-22
+--------------------------
+Changes:
+- Fixed metadata for pypi
+
 Version 0.5.5 - 2016-11-22
 --------------------------
 Changes:
