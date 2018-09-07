@@ -31,6 +31,10 @@ setup(
     url='https://github.com/Signum/paginate',
     license='MIT',
     packages=find_packages(),
+    extras_require={
+        "dev": ["pytest"],
+        "lint": ["black"],
+    },
     include_package_data=True,
     zip_safe=False,
     entry_points=""" """,
