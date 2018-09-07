@@ -482,9 +482,15 @@ class Page(list):
         # Replace ~...~ in token format by range of pages
         result = re.sub(r"~(\d+)~", links_markup, format)
 
-        link_first = self.page > self.first_page and self.link_tag(link_map["first_page"]) or ""
-        link_last = self.page < self.last_page and self.link_tag(link_map["last_page"]) or ""
-        link_previous = self.previous_page and self.link_tag(link_map["previous_page"]) or ""
+        link_first = (
+            self.page > self.first_page and self.link_tag(link_map["first_page"]) or ""
+        )
+        link_last = (
+            self.page < self.last_page and self.link_tag(link_map["last_page"]) or ""
+        )
+        link_previous = (
+            self.previous_page and self.link_tag(link_map["previous_page"]) or ""
+        )
         link_next = self.next_page and self.link_tag(link_map["next_page"]) or ""
         # Interpolate '$' variables
         result = Template(result).safe_substitute(
