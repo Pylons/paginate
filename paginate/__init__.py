@@ -323,7 +323,7 @@ class Page(list):
 
     def pager(self, format='~2~', url=None, show_if_single_page=False, separator=' ',
         symbol_first='&lt;&lt;', symbol_last='&gt;&gt;', symbol_previous='&lt;', symbol_next='&gt;',
-        link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict(), link_tag=None):
+        link_attr=None, curpage_attr=None, dotdot_attr=None, link_tag=None):
         """
         Return string with links to other pages (e.g. '1 .. 5 6 7 [8] 9 10 11 .. 50').
 
@@ -419,6 +419,9 @@ class Page(list):
 
 
         """
+        link_attr = link_attr or {}
+        curpage_attr = curpage_attr or {}
+        dotdot_attr = dotdot_attr or {}
         self.curpage_attr = curpage_attr
         self.separator = separator
         self.link_attr = link_attr
@@ -467,7 +470,7 @@ class Page(list):
 
     def link_map(self, format='~2~', url=None, show_if_single_page=False, separator=' ',
               symbol_first='&lt;&lt;', symbol_last='&gt;&gt;', symbol_previous='&lt;', symbol_next='&gt;',
-              link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict()):
+              link_attr=None, curpage_attr=None, dotdot_attr=None):
         """ Return map with links to other pages if default pager() function is not suitable solution.
         format:
             Format string that defines how the pager would be normally rendered rendered. Uses same arguments as pager()
@@ -576,6 +579,9 @@ class Page(list):
             Example: { 'style':'color: #808080' }
             Example: { 'class':'pager_dotdot' }
         """
+        link_attr = link_attr or {}
+        curpage_attr = curpage_attr or {}
+        dotdot_attr = dotdot_attr or {}
         self.curpage_attr = curpage_attr
         self.separator = separator
         self.link_attr = link_attr
