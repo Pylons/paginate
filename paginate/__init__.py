@@ -772,7 +772,7 @@ class Page(list):
 
     def _range(self, link_map, radius):
         """
-        Return range of linked pages to substiture placeholder in pattern
+        Return range of linked pages to substitute placeholder in pattern
         """
 
         leftmost_page = max(self.first_page, (self.page - radius))
