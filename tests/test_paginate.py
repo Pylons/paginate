@@ -108,6 +108,22 @@ def test_slice_page_5():
     assert page.items == [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
 
 
+def test_slice_page_greater_than_last_page():
+    items = list(range(1, 1000))
+    page = paginate.Page(items, page=10000, items_per_page=10)
+    assert page.page == 100
+    assert page.first_item == 991
+    assert page.last_item == 999
+    assert page.first_page == 1
+    assert page.last_page == 100
+    assert page.previous_page is 99
+    assert page.next_page is None
+    assert page.items_per_page == 10
+    assert page.item_count == 999
+    assert page.page_count == 100
+    assert page.items == [991, 992, 993, 994, 995, 996, 997, 998, 999]
+
+
 def test_link_map():
     """Test that fits 10 items on a single 10-item page."""
     items = range(109)
