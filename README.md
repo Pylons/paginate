@@ -124,7 +124,7 @@ Using link_tag callable to generate custom link markup
 ------------------------------------------------------
 
 In case you want to generate custom link markup for your project - for example for use with bootstrap,
-`pager()` accepts `link_tag` argument that expects a callable that can be used to easly override the way links are
+`pager()` accepts `link_tag` argument that expects a callable that can be used to easily override the way links are
 generated.
 
 
