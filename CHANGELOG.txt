@@ -1,3 +1,11 @@
+Version 0.5.7 - 2024-08-25
+--------------------------
+Changes:
+- Fixed metadata for pypi
+- Added a wheel release
+- Fixed tests for python 3.12
+
+
 Version 0.5.6 - 2016-11-22
 --------------------------
 Changes:
