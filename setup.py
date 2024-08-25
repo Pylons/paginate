@@ -10,9 +10,10 @@ with open(os.path.join(here, 'CHANGELOG.txt')) as f:
 
 setup(
     name='paginate',
-    version='0.5.6',
+    version='0.5.7',
     description="Divides large result sets into pages for easier browsing",
     long_description=README + '\n\n' + CHANGES,
+    long_description_content_type="text/markdown",
     # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Programming Language :: Python',
